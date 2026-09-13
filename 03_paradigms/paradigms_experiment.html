@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>5 Παραδείγματα AI | From Data to Decision</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#07090f;--panel:#111827;--border:#1e2d45;
+  --c1:#00d4ff;--c2:#ff6b35;--c3:#7c3aed;--c4:#f59e0b;--c5:#10b981;
+  --red:#ef4444;--text:#e2e8f0;--muted:#475569;--sub:#94a3b8;--hi:#0a0e1a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;padding:14px;max-width:900px;margin:0 auto}
+
+/* LANG */
+.lang-bar{display:flex;justify-content:flex-end;gap:6px;margin-bottom:14px}
+.lang-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.lang-btn.active{border-color:var(--c1);background:#00d4ff18;color:var(--c1)}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-sup{font-size:10px;letter-spacing:5px;color:var(--c3);margin-bottom:5px}
+.hdr-title{font-size:21px;font-weight:900;line-height:1.3;margin-bottom:4px}
+.hdr-sub{color:var(--muted);font-size:11px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;margin-bottom:12px}
+.tab-btn{flex:1;padding:8px 4px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--border);color:var(--text)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* SLIDERS */
+.slider-panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.slider-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.slider-group{flex:1;min-width:200px}
+.slider-label{font-size:10px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.slider-label span{color:var(--text);font-weight:700;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--c1);height:4px;cursor:pointer}
+.patient-display{background:var(--hi);border-radius:8px;padding:8px 12px;font-size:11px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+
+/* MODEL GRID */
+.model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:600px){.model-grid{grid-template-columns:1fr}}
+.model-card{background:var(--panel);border:2px solid var(--border);border-radius:12px;padding:12px;transition:border-color .2s,box-shadow .2s;position:relative}
+.model-card.best{box-shadow:0 0 20px 3px var(--best-c,#10b981);border-color:var(--best-c,#10b981)!important}
+.mc-header{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.mc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.mc-name{font-size:11px;font-weight:700}
+.mc-phil{font-size:9px;color:var(--muted);font-style:italic;margin-bottom:8px;line-height:1.4}
+.mc-logic{background:var(--hi);border-radius:6px;padding:6px 9px;font-size:10px;margin-bottom:8px;line-height:1.6;min-height:48px}
+.mc-decision{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mc-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px}
+.mc-badge.yes{background:#ef444422;color:var(--red);border:1px solid var(--red)44}
+.mc-badge.no{background:#10b98122;color:var(--c5);border:1px solid var(--c5)44}
+.mc-pct{font-size:18px;font-weight:900}
+.mc-bar-bg{height:5px;background:var(--hi);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.mc-bar{height:100%;border-radius:3px;transition:width .4s}
+
+/* METRICS */
+.metrics-section{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px}
+.metrics-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+@media(max-width:600px){.metrics-grid{grid-template-columns:repeat(2,1fr)}}
+.metric-card{background:var(--hi);border-radius:8px;padding:8px;text-align:center}
+.metric-name{font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:3px}
+.metric-vals{display:flex;flex-direction:column;gap:2px}
+.metric-val{font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:1px 4px}
+.radar-wrap{display:flex;justify-content:center;margin-top:8px}
+
+/* VIZ */
+.viz-section{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px}
+.viz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:600px){.viz-grid{grid-template-columns:1fr}}
+.viz-card{border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.viz-lbl{font-size:9px;padding:4px 8px;text-align:center;font-weight:700;letter-spacing:1px}
+canvas{display:block;width:100%!important}
+
+/* EXPLAIN */
+.explain-panel{background:var(--hi);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--sub);line-height:1.8;border-left:3px solid var(--c3)}
+.explain-panel strong{color:var(--text)}
+
+/* MATH CARDS */
+.math-card{background:var(--panel);border-radius:12px;padding:12px;margin-bottom:10px}
+.formula{background:var(--hi);border-radius:8px;padding:9px 13px;margin:6px 0;border-left:3px solid var(--c3);font-size:11px;line-height:1.9;overflow-x:auto}
+.mrow{display:flex;gap:7px;margin:7px 0}
+@media(max-width:500px){.mrow{flex-direction:column}}
+.mpro{flex:1;background:#10b98111;border-radius:6px;padding:6px 8px;font-size:10px}
+.mcon{flex:1;background:#ef444411;border-radius:6px;padding:6px 8px;font-size:10px}
+.pcrd{background:var(--panel);border-radius:12px;padding:12px;margin-bottom:9px}
+.pquote{border-radius:6px;padding:6px 9px;margin-bottom:7px;font-size:11px;font-style:italic;color:var(--sub)}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{padding:5px 7px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:5px 7px;border-bottom:1px solid var(--hi)}
+.footer{text-align:center;padding:14px 0 6px;color:var(--muted);font-size:10px;line-height:1.8}
+.plbl{font-size:9px;letter-spacing:3px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('el')" id="btn-el">🇬🇷 ΕΛ</button>
+  <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 EN</button>
+</div>
+
+<div class="hdr">
+  <div class="hdr-sup" id="h-sup">ΠΑΡΑΔΕΙΓΜΑΤΑ ΣΚΕΨΗΣ ΚΑΙ AI</div>
+  <div class="hdr-title" id="h-title">
+    <span style="color:var(--c1)">5 Τρόποι</span> που ένα AI
+    <span style="color:var(--c2)">Παίρνει Απόφαση</span>
+  </div>
+  <div class="hdr-sub" id="h-sub">Ίδια δεδομένα — 5 διαφορετικά παραδείγματα σκέψης — ποιο κερδίζει;</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('experiment')" id="tab-exp">🔬 <span id="t1">Πείραμα</span></button>
+  <button class="tab-btn" onclick="setTab('math')" id="tab-math">📐 <span id="t2">Μαθηματικά</span></button>
+  <button class="tab-btn" onclick="setTab('philosophy')" id="tab-phil">🏛 <span id="t3">Φιλοσοφία</span></button>
+</div>
+
+<!-- ═══ EXPERIMENT ═══ -->
+<div class="tab-content active" id="content-experiment">
+
+  <!-- EXPLAIN -->
+  <div class="explain-panel" id="exp-explain">
+    <strong>📌 Το Πρόβλημα:</strong> Ένας ασθενής με δεδομένα ηλικίας και αρτηριακής πίεσης — υπάρχει κίνδυνος καρδιακού επεισοδίου; Κούνα τα sliders και δες πώς κάθε παράδειγμα σκέψης παίρνει διαφορετική απόφαση και γιατί.
+  </div>
+
+  <!-- SLIDERS -->
+  <div class="slider-panel">
+    <div class="plbl" id="sl-label" style="color:var(--muted)">ΔΕΔΟΜΕΝΑ ΑΣΘΕΝΗ — ΚΟΥΝΑ ΓΙΑ LIVE ΑΛΛΑΓΗ</div>
+    <div class="slider-row">
+      <div class="slider-group">
+        <div class="slider-label"><span id="sl-age-lbl">Ηλικία</span> <span id="age-val">55</span></div>
+        <input type="range" id="sl-age" min="20" max="90" value="55" oninput="update()">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span id="sl-bp-lbl">Αρτηριακή Πίεση (mmHg)</span> <span id="bp-val">130</span></div>
+        <input type="range" id="sl-bp" min="80" max="200" value="130" oninput="update()">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label"><span id="sl-chol-lbl">Χοληστερίνη (mg/dL)</span> <span id="chol-val">200</span></div>
+        <input type="range" id="sl-chol" min="100" max="350" value="200" oninput="update()">
+      </div>
+    </div>
+    <div class="patient-display" id="patient-display"></div>
+  </div>
+
+  <!-- MODEL CARDS -->
+  <div class="plbl" id="models-lbl" style="color:var(--muted);margin-bottom:8px">ΤΑ 5 ΠΑΡΑΔΕΙΓΜΑΤΑ — LIVE ΑΠΟΦΑΣΗ</div>
+  <div class="model-grid" id="model-grid"></div>
+
+  <!-- METRICS -->
+  <div class="metrics-section">
+    <div class="plbl" id="metrics-lbl" style="color:var(--muted)">ΔΕΙΚΤΕΣ ΑΞΙΟΛΟΓΗΣΗΣ — ΠΟΙΟ ΜΟΝΤΕΛΟ ΕΙΝΑΙ ΚΑΛΥΤΕΡΟ;</div>
+    <div class="explain-panel" id="metrics-explain" style="margin-bottom:10px">
+      <strong>Πώς διαβάζεις τους δείκτες:</strong> <span id="metrics-help">Accuracy = % σωστών. Precision = από όσους είπε ΝΑΙ, πόσοι ήταν πράγματι ΝΑΙ. Recall = από όσους ΉΤΑΝε ΝΑΙ, πόσους βρήκε. F1 = ισορροπία precision/recall. Interpretability = πόσο εξηγήσιμο είναι.</span>
+    </div>
+    <div class="metrics-grid" id="metrics-grid"></div>
+    <div class="radar-wrap"><canvas id="radar-chart" width="420" height="260"></canvas></div>
+  </div>
+
+  <!-- DECISION BOUNDARIES -->
+  <div class="viz-section">
+    <div class="plbl" id="viz-lbl" style="color:var(--muted)">ΟΡΙΟ ΑΠΟΦΑΣΗΣ — ΗΛΙΚΙΑ vs ΠΙΕΣΗ (Χοληστερίνη = σταθερή)</div>
+    <div class="viz-grid">
+      <div class="viz-card" style="border-color:#00d4ff33"><div class="viz-lbl" style="color:#00d4ff" id="vl1">ΠΡΟΤΑΣΙΑΚΟ</div><canvas id="vc-0" height="140"></canvas></div>
+      <div class="viz-card" style="border-color:#ff6b3533"><div class="viz-lbl" style="color:#ff6b35" id="vl2">ΚΑΤΗΓΟΡΗΜΑΤΙΚΟ</div><canvas id="vc-1" height="140"></canvas></div>
+      <div class="viz-card" style="border-color:#7c3aed33"><div class="viz-lbl" style="color:#a78bfa" id="vl3">ΣΥΝΑΡΤΗΣΙΑΚΟ (NN)</div><canvas id="vc-2" height="140"></canvas></div>
+      <div class="viz-card" style="border-color:#f59e0b33"><div class="viz-lbl" style="color:#f59e0b" id="vl4">ΠΙΘΑΝΟΛΟΓΙΚΟ</div><canvas id="vc-3" height="140"></canvas></div>
+      <div class="viz-card" style="border-color:#10b98133"><div class="viz-lbl" style="color:#10b981" id="vl5">ΕΠΑΓΩΓΙΚΟ (kNN)</div><canvas id="vc-4" height="140"></canvas></div>
+      <div class="viz-card" style="border-color:#47556933">
+        <div class="viz-lbl" style="color:#94a3b8" id="vl6">LEGEND</div>
+        <canvas id="vc-legend" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ MATH ═══ -->
+<div class="tab-content" id="content-math">
+
+  <div id="math-cards-container">
+  <!-- Generated by JS -->
+  </div>
+
+  <!-- Metrics explanation -->
+  <div class="math-card" style="border:1px solid #7c3aed33">
+    <div style="color:#a78bfa;font-size:13px;font-weight:900;margin-bottom:9px" id="m-metrics-title">Δείκτες Αξιολόγησης — Τι Σημαίνουν</div>
+    <div style="background:var(--hi);border-radius:8px;padding:10px 13px;font-size:11px;line-height:2">
+      <div><span style="color:var(--c1);font-weight:700">Accuracy</span> <span style="color:var(--muted)">= (TP+TN)/(TP+TN+FP+FN)</span> &nbsp;— % σωστών συνολικά</div>
+      <div><span style="color:var(--c2);font-weight:700">Precision</span> <span style="color:var(--muted)">= TP/(TP+FP)</span> &nbsp;— από τα ΝΑΙ, πόσα ήταν σωστά</div>
+      <div><span style="color:var(--c3);font-weight:700;color:#a78bfa">Recall</span> <span style="color:var(--muted)">= TP/(TP+FN)</span> &nbsp;— από τα πραγματικά ΝΑΙ, πόσα βρήκε</div>
+      <div><span style="color:var(--c4);font-weight:700">F1 Score</span> <span style="color:var(--muted)">= 2·(Precision·Recall)/(Precision+Recall)</span> &nbsp;— αρμονικός μέσος</div>
+      <div><span style="color:var(--c5);font-weight:700">Interpretability</span> <span style="color:var(--muted)">— πόσο εξηγήσιμο είναι το μοντέλο (subjective)</span></div>
+    </div>
+    <div style="background:var(--hi);border-radius:8px;padding:9px 13px;margin-top:8px;font-size:11px;line-height:1.8;color:var(--sub)" id="m-tradeoff">
+      <strong style="color:var(--text)">Το Tradeoff:</strong> Δεν υπάρχει "καλύτερο" μοντέλο παντού. Ανάλογα με το πρόβλημα επιλέγεις τι βελτιστοποιείς — Recall για ιατρική διάγνωση (δεν θέλεις να χάσεις κίνδυνο), Precision για spam (δεν θέλεις false alarms).
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ PHILOSOPHY ═══ -->
+<div class="tab-content" id="content-philosophy">
+  <div class="panel" style="border-color:#7c3aed33">
+    <div class="plbl" style="color:var(--c3)" id="ph-main-lbl">Η ΚΕΝΤΡΙΚΗ ΙΔΕΑ</div>
+    <p style="color:var(--sub);font-size:12px;line-height:1.8" id="ph-main-text">
+      Κάθε παράδειγμα σκέψης αντιστοιχεί σε έναν διαφορετικό τρόπο που οι φιλόσοφοι και οι επιστήμονες έχουν προτείνει για το πώς αποκτάμε γνώση. Το AI δεν εφηύρε νέους τρόπους σκέψης — <span style="color:var(--text)">υλοποίησε παλιές ιδέες σε κώδικα</span>.
+    </p>
+  </div>
+
+  <div id="phil-cards-container"></div>
+
+  <div class="panel" style="border-color:#f59e0b44">
+    <div class="plbl" style="color:var(--c4)" id="ph-conc-lbl">ΣΥΜΠΕΡΑΣΜΑ</div>
+    <p style="color:var(--sub);font-size:12px;line-height:1.8" id="ph-conc-text">
+      Το σύγχρονο AI δεν είναι ένα παράδειγμα — είναι η <span style="color:var(--text)">σύνθεση όλων</span>. Ένα LLM όπως το GPT χρησιμοποιεί συναρτησιακό παράδειγμα (layers), πιθανολογικό (next token probability), επαγωγικό (μαθαίνει από δεδομένα), και κατηγορηματικό (reasoning). Ο στόχος της AI έρευνας είναι να τα <span style="color:var(--c2)">ενοποιήσει όλα</span> σε ένα μοντέλο γενικής νοημοσύνης.
+    </p>
+    <div style="background:#f59e0b11;border-radius:7px;padding:9px;font-size:11px;color:#fcd34d;line-height:1.7;margin-top:8px" id="ph-tip">
+      💡 Η ερώτηση "ποιο παράδειγμα είναι καλύτερο;" είναι λάθος ερώτηση. Η σωστή είναι: <strong>"Ποια δομή έχουν τα δεδομένα μου και ποιο παράδειγμα ταιριάζει σε αυτή;"</strong>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div id="footer-txt">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+  <div style="margin-top:3px;color:#334155">Post 5/5: From Plato to Transformers</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════════
+const T = {
+  el: {
+    "h-sup":"ΠΑΡΑΔΕΙΓΜΑΤΑ ΣΚΕΨΗΣ ΚΑΙ AI",
+    "h-sub":"Ίδια δεδομένα — 5 διαφορετικά παραδείγματα σκέψης — ποιο κερδίζει;",
+    "t1":"Πείραμα","t2":"Μαθηματικά","t3":"Φιλοσοφία",
+    "sl-label":"ΔΕΔΟΜΕΝΑ ΑΣΘΕΝΗ — ΚΟΥΝΑ ΓΙΑ LIVE ΑΛΛΑΓΗ",
+    "sl-age-lbl":"Ηλικία","sl-bp-lbl":"Αρτηριακή Πίεση (mmHg)","sl-chol-lbl":"Χοληστερίνη (mg/dL)",
+    "models-lbl":"ΤΑ 5 ΠΑΡΑΔΕΙΓΜΑΤΑ — LIVE ΑΠΟΦΑΣΗ",
+    "metrics-lbl":"ΔΕΙΚΤΕΣ ΑΞΙΟΛΟΓΗΣΗΣ — ΠΟΙΟ ΜΟΝΤΕΛΟ ΕΙΝΑΙ ΚΑΛΥΤΕΡΟ;",
+    "viz-lbl":"ΟΡΙΟ ΑΠΟΦΑΣΗΣ — ΗΛΙΚΙΑ vs ΠΙΕΣΗ",
+    "vl1":"ΠΡΟΤΑΣΙΑΚΟ","vl2":"ΚΑΤΗΓΟΡΗΜΑΤΙΚΟ","vl3":"ΣΥΝΑΡΤΗΣΙΑΚΟ (NN)","vl4":"ΠΙΘΑΝΟΛΟΓΙΚΟ","vl5":"ΕΠΑΓΩΓΙΚΟ (kNN)","vl6":"LEGEND",
+    "exp-explain":`<strong>📌 Το Πρόβλημα:</strong> Ένας ασθενής με δεδομένα ηλικίας, αρτηριακής πίεσης και χοληστερίνης — υπάρχει κίνδυνος καρδιακού επεισοδίου; Κούνα τα sliders και δες πώς κάθε παράδειγμα σκέψης παίρνει διαφορετική απόφαση και γιατί.`,
+    "metrics-explain":`<strong>Πώς διαβάζεις τους δείκτες:</strong>`,
+    "metrics-help":"Accuracy = % σωστών. Precision = από τα ΝΑΙ, πόσα ήταν σωστά. Recall = από τα πραγματικά ΝΑΙ, πόσα βρήκε. F1 = αρμονικός μέσος. Interpretability = εξηγησιμότητα.",
+    "YES":"ΚΙΝΔΥΝΟΣ","NO":"ΑΣΦΑΛΗΣ",
+    "BEST":"🏆 ΚΑΛΥΤΕΡΟ",
+    "m-metrics-title":"Δείκτες Αξιολόγησης — Τι Σημαίνουν",
+    "m-tradeoff":`<strong style="color:var(--text)">Το Tradeoff:</strong> Δεν υπάρχει "καλύτερο" μοντέλο παντού. Για ιατρική διάγνωση βελτιστοποιείς Recall (δεν θέλεις να χάσεις κίνδυνο). Για spam βελτιστοποιείς Precision (δεν θέλεις false alarms).`,
+    "ph-main-lbl":"Η ΚΕΝΤΡΙΚΗ ΙΔΕΑ",
+    "ph-main-text":`Κάθε παράδειγμα σκέψης αντιστοιχεί σε διαφορετικό τρόπο απόκτησης γνώσης. Το AI δεν εφηύρε νέους τρόπους σκέψης — <span style="color:var(--text)">υλοποίησε παλιές ιδέες σε κώδικα</span>.`,
+    "ph-conc-lbl":"ΣΥΜΠΕΡΑΣΜΑ",
+    "ph-conc-text":`Το σύγχρονο AI είναι η <span style="color:var(--text)">σύνθεση όλων</span>. Ένα LLM χρησιμοποιεί συναρτησιακό (layers), πιθανολογικό (next token), επαγωγικό (μαθαίνει), και κατηγορηματικό (reasoning) παράδειγμα ταυτόχρονα.`,
+    "ph-tip":`💡 Η σωστή ερώτηση δεν είναι "ποιο παράδειγμα είναι καλύτερο;" αλλά: <strong>"Ποια δομή έχουν τα δεδομένα μου και ποιο παράδειγμα ταιριάζει;"</strong>`,
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "patientTxt":(a,b,c,risk)=>`Ηλικία: <b style="color:var(--c1)">${a}</b> &nbsp;|&nbsp; Πίεση: <b style="color:${b>140?'var(--red)':'var(--c5)'}">${b}</b> mmHg &nbsp;|&nbsp; Χοληστερίνη: <b style="color:${c>240?'var(--red)':'var(--c5)'}">${c}</b> mg/dL &nbsp;|&nbsp; Πραγματικός κίνδυνος: <b style="color:${risk>0.5?'var(--red)':'var(--c5)'}">${(risk*100).toFixed(0)}%</b>`,
+  },
+  en: {
+    "h-sup":"THINKING PARADIGMS & AI",
+    "h-sub":"Same data — 5 different thinking paradigms — which one wins?",
+    "t1":"Experiment","t2":"Mathematics","t3":"Philosophy",
+    "sl-label":"PATIENT DATA — DRAG SLIDERS FOR LIVE UPDATE",
+    "sl-age-lbl":"Age","sl-bp-lbl":"Blood Pressure (mmHg)","sl-chol-lbl":"Cholesterol (mg/dL)",
+    "models-lbl":"THE 5 PARADIGMS — LIVE DECISION",
+    "metrics-lbl":"EVALUATION METRICS — WHICH MODEL IS BEST?",
+    "viz-lbl":"DECISION BOUNDARY — AGE vs BLOOD PRESSURE",
+    "vl1":"PROPOSITIONAL","vl2":"PREDICATE LOGIC","vl3":"FUNCTIONAL (NN)","vl4":"PROBABILISTIC","vl5":"INDUCTIVE (kNN)","vl6":"LEGEND",
+    "exp-explain":`<strong>📌 The Problem:</strong> A patient with age, blood pressure and cholesterol data — is there a risk of cardiac event? Drag the sliders and watch how each thinking paradigm makes a different decision and why.`,
+    "metrics-explain":`<strong>How to read the metrics:</strong>`,
+    "metrics-help":"Accuracy = % correct. Precision = of the YES predictions, how many were right. Recall = of the actual YES cases, how many were found. F1 = harmonic mean. Interpretability = how explainable the model is.",
+    "YES":"AT RISK","NO":"SAFE",
+    "BEST":"🏆 BEST",
+    "m-metrics-title":"Evaluation Metrics — What They Mean",
+    "m-tradeoff":`<strong style="color:var(--text)">The Tradeoff:</strong> There is no single "best" model. For medical diagnosis you optimise Recall (don't miss a risk). For spam detection you optimise Precision (avoid false alarms).`,
+    "ph-main-lbl":"THE CORE IDEA",
+    "ph-main-text":`Each thinking paradigm corresponds to a different way of acquiring knowledge. AI did not invent new ways of thinking — <span style="color:var(--text)">it implemented ancient ideas in code</span>.`,
+    "ph-conc-lbl":"CONCLUSION",
+    "ph-conc-text":`Modern AI is the <span style="color:var(--text)">synthesis of all paradigms</span>. An LLM uses functional (layers), probabilistic (next token), inductive (learns from data), and predicate (reasoning) paradigms simultaneously.`,
+    "ph-tip":`💡 The right question is not "which paradigm is best?" but: <strong>"What structure do my data have and which paradigm fits?"</strong>`,
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "patientTxt":(a,b,c,risk)=>`Age: <b style="color:var(--c1)">${a}</b> &nbsp;|&nbsp; BP: <b style="color:${b>140?'var(--red)':'var(--c5)'}">${b}</b> mmHg &nbsp;|&nbsp; Cholesterol: <b style="color:${c>240?'var(--red)':'var(--c5)'}">${c}</b> mg/dL &nbsp;|&nbsp; True risk: <b style="color:${risk>0.5?'var(--red)':'var(--c5)'}">${(risk*100).toFixed(0)}%</b>`,
+  }
+};
+
+// ══════════════════════════════════════════
+// MODEL DEFINITIONS
+// ══════════════════════════════════════════
+const MODELS = [
+  {
+    id:'prop', color:'var(--c1)', hex:'#00d4ff',
+    name:{el:'Προτασιακό',en:'Propositional'},
+    phil:{el:'Αν → Τότε — Κανόνες Παρμενίδη',en:'If → Then — Parmenides Rules'},
+    logic:(a,b,c)=>{
+      const risk = (a>60?0.35:0)+(b>140?0.40:b>120?0.20:0)+(c>240?0.25:c>200?0.10:0);
+      return Math.min(1,risk);
+    },
+    explain:{
+      el:(a,b,c)=>{
+        const rules=[];
+        if(a>60) rules.push(`Ηλικία ${a}>60 → +35%`);
+        if(b>140) rules.push(`Πίεση ${b}>140 → +40%`);
+        else if(b>120) rules.push(`Πίεση ${b}>120 → +20%`);
+        if(c>240) rules.push(`Χολ. ${c}>240 → +25%`);
+        else if(c>200) rules.push(`Χολ. ${c}>200 → +10%`);
+        return rules.length?rules.join(' · '):'Κανένας κανόνας → Ασφαλής';
+      },
+      en:(a,b,c)=>{
+        const rules=[];
+        if(a>60) rules.push(`Age ${a}>60 → +35%`);
+        if(b>140) rules.push(`BP ${b}>140 → +40%`);
+        else if(b>120) rules.push(`BP ${b}>120 → +20%`);
+        if(c>240) rules.push(`Chol ${c}>240 → +25%`);
+        return rules.length?rules.join(' · '):'No rules triggered → Safe';
+      }
+    },
+    metrics:{accuracy:0.78,precision:0.74,recall:0.82,f1:0.78,interp:1.0},
+    mathEl:`<b style="color:var(--c1)">Κανόνες IF-THEN:</b><br>
+ΑΝ ηλικία > 60 → risk += 0.35<br>
+ΑΝ πίεση > 140 → risk += 0.40<br>
+ΑΝ χολ. > 240 → risk += 0.25<br>
+<span style="color:var(--muted)">ΑΝ risk > 0.5 ΤΟΤΕ ΚΙΝΔΥΝΟΣ</span>`,
+    mathEn:`<b style="color:var(--c1)">IF-THEN Rules:</b><br>
+IF age > 60 → risk += 0.35<br>
+IF BP > 140 → risk += 0.40<br>
+IF chol > 240 → risk += 0.25<br>
+<span style="color:var(--muted)">IF risk > 0.5 THEN AT RISK</span>`,
+    proEl:'Απόλυτα εξηγήσιμο — ξέρεις ακριβώς γιατί',
+    conEl:'Άκαμπτο — αδύνατο να πιάσει σύνθετες σχέσεις',
+    proEn:'Fully explainable — you know exactly why',
+    conEn:'Rigid — cannot capture complex relationships',
+    philEl:'Παρμενίδης: κανόνες χωρίς αμφιβολία, σταθερή λογική',
+    philEn:'Parmenides: rules without doubt, fixed logic',
+  },
+  {
+    id:'pred', color:'var(--c2)', hex:'#ff6b35',
+    name:{el:'Κατηγορηματικό',en:'Predicate Logic'},
+    phil:{el:'∀x: Κανόνες με Μεταβλητές',en:'∀x: Rules with Variables'},
+    logic:(a,b,c)=>{
+      // More nuanced predicate-style: combines conditions multiplicatively
+      const ageFactor = Math.min(1,(a-20)/70);
+      const bpFactor  = Math.min(1,Math.max(0,(b-100)/100));
+      const cholFact  = Math.min(1,Math.max(0,(c-150)/200));
+      return 0.4*ageFactor + 0.45*bpFactor + 0.15*cholFact;
+    },
+    explain:{
+      el:(a,b,c)=>`∀x: Ασθενής(x) ∧ Ηλικία(x,${a}) ∧ Πίεση(x,${b}) → ΒαθμόςΚινδύνου`,
+      en:(a,b,c)=>`∀x: Patient(x) ∧ Age(x,${a}) ∧ BP(x,${b}) → RiskScore`
+    },
+    metrics:{accuracy:0.80,precision:0.77,recall:0.84,f1:0.80,interp:0.85},
+    mathEl:`<b style="color:var(--c2)">Κατηγορηματική Λογική:</b><br>
+∀x: Ασθενής(x) ∧ Ηλικία(x,>60) ∧ Πίεση(x,>140)<br>
+&nbsp;&nbsp;&nbsp;→ ΥψηλόςΚίνδυνος(x)<br>
+<span style="color:var(--muted)">risk = 0.4·(age-20)/70 + 0.45·(bp-100)/100 + 0.15·(chol-150)/200</span>`,
+    mathEn:`<b style="color:var(--c2)">Predicate Logic:</b><br>
+∀x: Patient(x) ∧ Age(x,>60) ∧ BP(x,>140)<br>
+&nbsp;&nbsp;&nbsp;→ HighRisk(x)<br>
+<span style="color:var(--muted)">risk = 0.4·(age-20)/70 + 0.45·(bp-100)/100 + 0.15·(chol-150)/200</span>`,
+    proEl:'Γενικεύσιμο — ένας κανόνας καλύπτει πολλές περιπτώσεις',
+    conEl:'Δύσκολο να γραφτούν όλοι οι κανόνες χειροκίνητα',
+    proEn:'Generalisable — one rule covers many cases',
+    conEn:'Hard to write all rules manually',
+    philEl:'Αριστοτέλης: συλλογισμός — από γενικό σε ειδικό',
+    philEn:'Aristotle: syllogism — from general to specific',
+  },
+  {
+    id:'func', color:'var(--c3)', hex:'#7c3aed',
+    name:{el:'Συναρτησιακό (NN)',en:'Functional (NN)'},
+    phil:{el:'f∘g∘h — Σύνθεση Μετασχηματισμών',en:'f∘g∘h — Composition of Transforms'},
+    logic:(a,b,c)=>{
+      // Simulate trained NN weights
+      const x1=(a-55)/35, x2=(b-140)/60, x3=(c-225)/125;
+      const h1=Math.max(0, 0.6*x1+0.8*x2+0.3*x3+0.1);
+      const h2=Math.max(0,-0.2*x1+0.9*x2+0.5*x3-0.05);
+      const h3=Math.max(0, 0.4*x1+0.3*x2+0.7*x3+0.0);
+      const z2=0.7*h1+0.8*h2+0.5*h3-0.2;
+      return 1/(1+Math.exp(-z2));
+    },
+    explain:{
+      el:(a,b,c)=>`Κρυφό layer ReLU → σ(W²·a¹+b²) — Μαθημένα βάρη από δεδομένα`,
+      en:(a,b,c)=>`Hidden layer ReLU → σ(W²·a¹+b²) — Weights learned from data`
+    },
+    metrics:{accuracy:0.87,precision:0.85,recall:0.88,f1:0.86,interp:0.30},
+    mathEl:`<b style="color:#a78bfa">Neural Network:</b><br>
+z¹ = W¹·[age,bp,chol] + b¹<br>
+a¹ = ReLU(z¹) <span style="color:var(--muted)">// hidden layer</span><br>
+ŷ  = σ(W²·a¹ + b²) <span style="color:var(--muted)">// output</span><br>
+<span style="color:var(--muted)">Βάρη W εκπαιδεύτηκαν με backprop</span>`,
+    mathEn:`<b style="color:#a78bfa">Neural Network:</b><br>
+z¹ = W¹·[age,bp,chol] + b¹<br>
+a¹ = ReLU(z¹) <span style="color:var(--muted)">// hidden layer</span><br>
+ŷ  = σ(W²·a¹ + b²) <span style="color:var(--muted)">// output</span><br>
+<span style="color:var(--muted)">Weights W trained via backprop</span>`,
+    proEl:'Υψηλότερη ακρίβεια — πιάνει σύνθετες μη-γραμμικές σχέσεις',
+    conEl:'Black box — δύσκολο να εξηγήσεις γιατί αποφάσισε',
+    proEn:'Higher accuracy — captures complex non-linear relationships',
+    conEn:'Black box — hard to explain why it decided',
+    philEl:'Leibniz: σύνθεση — το σύνολο είναι περισσότερο από τα μέρη',
+    philEn:'Leibniz: composition — the whole is more than its parts',
+  },
+  {
+    id:'prob', color:'var(--c4)', hex:'#f59e0b',
+    name:{el:'Πιθανολογικό (Bayes)',en:'Probabilistic (Bayes)'},
+    phil:{el:'P(A|B) — Αβεβαιότητα & Ενημέρωση',en:'P(A|B) — Uncertainty & Updating'},
+    logic:(a,b,c)=>{
+      // Naive Bayes approximation
+      const pAge  = a>60?0.75:a>45?0.45:0.20;
+      const pBP   = b>140?0.80:b>120?0.55:0.25;
+      const pChol = c>240?0.70:c>200?0.45:0.25;
+      const prior = 0.35;
+      // Simplified Bayes update
+      let post = prior;
+      post = post*pAge/(post*pAge+(1-post)*(1-pAge));
+      post = post*pBP/(post*pBP+(1-post)*(1-pBP));
+      post = post*pChol/(post*pChol+(1-post)*(1-pChol));
+      return Math.min(0.99,Math.max(0.01,post));
+    },
+    explain:{
+      el:(a,b,c)=>`P(κίνδυνος|δεδομένα) = P(δεδ|κίνδ)·P(κίνδ)/P(δεδ) — Bayes Update`,
+      en:(a,b,c)=>`P(risk|data) = P(data|risk)·P(risk)/P(data) — Bayes Update`
+    },
+    metrics:{accuracy:0.82,precision:0.79,recall:0.86,f1:0.82,interp:0.75},
+    mathEl:`<b style="color:var(--c4)">Naive Bayes:</b><br>
+P(κίνδυνος|ηλικία,πίεση,χολ.) =<br>
+&nbsp;&nbsp;P(ηλικία|κίνδ)·P(πίεση|κίνδ)·P(χολ.|κίνδ)·P(κίνδ)<br>
+&nbsp;&nbsp;─────────────────────────────────<br>
+&nbsp;&nbsp;P(ηλικία)·P(πίεση)·P(χολ.)<br>
+<span style="color:var(--muted)">Prior P(κίνδ) = 0.35 (επιπολασμός)</span>`,
+    mathEn:`<b style="color:var(--c4)">Naive Bayes:</b><br>
+P(risk|age,bp,chol) =<br>
+&nbsp;&nbsp;P(age|risk)·P(bp|risk)·P(chol|risk)·P(risk)<br>
+&nbsp;&nbsp;─────────────────────────────────<br>
+&nbsp;&nbsp;P(age)·P(bp)·P(chol)<br>
+<span style="color:var(--muted)">Prior P(risk) = 0.35 (prevalence)</span>`,
+    proEl:'Δίνει πιθανότητα με αβεβαιότητα — "85% κίνδυνος"',
+    conEl:'Naive υπόθεση ανεξαρτησίας — δεν πιάνει συσχετίσεις',
+    proEn:'Gives probability with uncertainty — "85% risk"',
+    conEn:'Naive independence assumption — misses correlations',
+    philEl:'Hume: γνώση μέσω επαγωγής και πιθανότητας, όχι βεβαιότητας',
+    philEn:'Hume: knowledge through induction and probability, not certainty',
+  },
+  {
+    id:'ind', color:'var(--c5)', hex:'#10b981',
+    name:{el:'Επαγωγικό (kNN)',en:'Inductive (kNN)'},
+    phil:{el:'Μαθαίνω από Παραδείγματα — k Γείτονες',en:'Learn from Examples — k Neighbours'},
+    logic:(a,b,c)=>{
+      // kNN with synthetic training data
+      const trainData=[
+        [25,90,160,0],[30,95,170,0],[35,100,180,0],[40,105,185,0],
+        [45,110,190,0.1],[50,115,195,0.1],[55,120,200,0.2],[55,130,210,0.3],
+        [60,135,215,0.4],[60,140,220,0.5],[65,145,230,0.6],[65,150,235,0.7],
+        [70,155,240,0.75],[70,160,245,0.8],[75,165,250,0.85],[75,170,260,0.9],
+        [80,175,270,0.92],[80,180,280,0.95],[85,185,290,0.97],[90,190,300,0.99],
+        [45,160,200,0.7],[50,170,210,0.75],[35,180,220,0.8],
+        [70,90,280,0.4],[65,95,260,0.35],
+      ];
+      const norm=(v,mn,mx)=>(v-mn)/(mx-mn);
+      const na=norm(a,20,90),nb=norm(b,80,200),nc=norm(c,100,350);
+      const dists=trainData.map(([ta,tb,tc,risk])=>{
+        const dn=norm(ta,20,90),dn2=norm(tb,80,200),dn3=norm(tc,100,350);
+        return{d:Math.sqrt((na-dn)**2+(nb-dn2)**2+(nc-dn3)**2),risk};
+      });
+      dists.sort((a,b)=>a.d-b.d);
+      const k=5;
+      return dists.slice(0,k).reduce((s,x)=>s+x.risk,0)/k;
+    },
+    explain:{
+      el:(a,b,c)=>`5 πιο κοντινοί ασθενείς στα δεδομένα → μέσος κίνδυνος γειτόνων`,
+      en:(a,b,c)=>`5 nearest patients in training data → average neighbour risk`
+    },
+    metrics:{accuracy:0.84,precision:0.81,recall:0.87,f1:0.84,interp:0.60},
+    mathEl:`<b style="color:var(--c5)">k-Nearest Neighbours (k=5):</b><br>
+d(x,xᵢ) = √[(age-ageᵢ)²+(bp-bpᵢ)²+(chol-cholᵢ)²]<br>
+<span style="color:var(--muted)">// βρες τους 5 πιο κοντινούς</span><br>
+ŷ = (1/k) · Σ riskᵢ &nbsp;<span style="color:var(--muted)">// μέσος γειτόνων</span><br>
+<span style="color:var(--muted)">Δεν έχει παραμέτρους — απομνημονεύει τα δεδομένα</span>`,
+    mathEn:`<b style="color:var(--c5)">k-Nearest Neighbours (k=5):</b><br>
+d(x,xᵢ) = √[(age-ageᵢ)²+(bp-bpᵢ)²+(chol-cholᵢ)²]<br>
+<span style="color:var(--muted)">// find 5 nearest points</span><br>
+ŷ = (1/k) · Σ riskᵢ &nbsp;<span style="color:var(--muted)">// average of neighbours</span><br>
+<span style="color:var(--muted)">No parameters — memorises training data</span>`,
+    proEl:'Μαθαίνει αυτόματα — δεν χρειάζεται να ορίσεις κανόνες',
+    conEl:'Αργό σε μεγάλα δεδομένα — αποθηκεύει όλα τα παραδείγματα',
+    proEn:'Learns automatically — no need to define rules',
+    conEn:'Slow on large data — stores all training examples',
+    philEl:'Επίκουρος: γνώση μέσω εμπειρίας και παρατήρησης',
+    philEn:'Epicurus: knowledge through experience and observation',
+  }
+];
+
+// ══════════════════════════════════════════
+// TRUE RISK (ground truth)
+// ══════════════════════════════════════════
+function trueRisk(a,b,c){
+  return Math.min(0.99,Math.max(0.01,
+    0.4*Math.min(1,(a-20)/70)+
+    0.45*Math.min(1,Math.max(0,(b-100)/100))+
+    0.15*Math.min(1,Math.max(0,(c-150)/200))
+  ));
+}
+
+// ══════════════════════════════════════════
+// RENDER MODEL CARDS
+// ══════════════════════════════════════════
+function renderCards(){
+  const age=+document.getElementById('sl-age').value;
+  const bp=+document.getElementById('sl-bp').value;
+  const chol=+document.getElementById('sl-chol').value;
+  const t=T[lang];
+
+  // Compute all risks
+  const risks=MODELS.map(m=>m.logic(age,bp,chol));
+  // Best = closest to neural net (functional) as reference
+  const best=risks.indexOf(Math.max(...risks.map((r,i)=>MODELS[i].metrics.f1)));
+
+  document.getElementById('model-grid').innerHTML=MODELS.map((m,i)=>{
+    const risk=risks[i];
+    const isRisk=risk>0.5;
+    const isBest=MODELS[i].metrics.f1===Math.max(...MODELS.map(x=>x.metrics.f1));
+    return `<div class="model-card${isBest?' best':''}" style="border-color:${m.hex}44;${isBest?`--best-c:${m.hex}`:''}">
+      <div class="mc-header">
+        <div class="mc-dot" style="background:${m.hex}"></div>
+        <span class="mc-name" style="color:${m.hex}">${m.name[lang]}${isBest?` <span style="font-size:9px">🏆</span>`:''}</span>
+      </div>
+      <div class="mc-phil">${m.phil[lang]}</div>
+      <div class="mc-logic">${m.explain[lang](age,bp,chol)}</div>
+      <div class="mc-decision">
+        <span class="mc-badge ${isRisk?'yes':'no'}">${isRisk?t.YES:t.NO}</span>
+        <span class="mc-pct" style="color:${isRisk?'var(--red)':'var(--c5)'}">${(risk*100).toFixed(0)}%</span>
+      </div>
+      <div class="mc-bar-bg"><div class="mc-bar" style="width:${risk*100}%;background:${isRisk?'var(--red)':m.hex}"></div></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <span style="font-size:9px;color:var(--muted)">F1:<span style="color:${m.hex}"> ${(m.metrics.f1*100).toFixed(0)}%</span></span>
+        <span style="font-size:9px;color:var(--muted)">Acc:<span style="color:${m.hex}"> ${(m.metrics.accuracy*100).toFixed(0)}%</span></span>
+        <span style="font-size:9px;color:var(--muted)">Interp:<span style="color:${m.hex}"> ${(m.metrics.interp*100).toFixed(0)}%</span></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// METRICS GRID
+// ══════════════════════════════════════════
+function renderMetrics(){
+  const metricKeys=['accuracy','precision','recall','f1','interp'];
+  const metricNames={el:['Accuracy','Precision','Recall','F1 Score','Interpretability'],en:['Accuracy','Precision','Recall','F1 Score','Interpretability']};
+  const best={};
+  metricKeys.forEach(k=>{best[k]=Math.max(...MODELS.map(m=>m.metrics[k]));});
+
+  document.getElementById('metrics-grid').innerHTML=metricKeys.map((k,ki)=>`
+    <div class="metric-card">
+      <div class="metric-name">${metricNames[lang][ki]}</div>
+      <div class="metric-vals">
+        ${MODELS.map(m=>{
+          const v=m.metrics[k];
+          const isBest=v===best[k];
+          return `<div class="metric-val" style="color:${m.hex};${isBest?`font-size:13px`:'opacity:.75'}">
+            <span>${m.name[lang].split(' ')[0]}</span>
+            <span>${(v*100).toFixed(0)}%${isBest?' ★':''}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// RADAR CHART
+// ══════════════════════════════════════════
+function drawRadar(){
+  const cv=document.getElementById('radar-chart');if(!cv)return;
+  const W=cv.width,H=cv.height;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2+10,r=Math.min(W,H)*0.38;
+  const keys=['accuracy','precision','recall','f1','interp'];
+  const labels={el:['Accuracy','Precision','Recall','F1','Interp.'],en:['Accuracy','Precision','Recall','F1','Interp.']};
+  const n=keys.length;
+  const angles=keys.map((_,i)=>i*2*Math.PI/n - Math.PI/2);
+
+  // Grid
+  [0.25,0.5,0.75,1].forEach(frac=>{
+    ctx.strokeStyle='#1e2d4555';ctx.lineWidth=.5;
+    ctx.beginPath();
+    angles.forEach((a,i)=>{
+      const x=cx+Math.cos(a)*r*frac,y=cy+Math.sin(a)*r*frac;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.closePath();ctx.stroke();
+    ctx.fillStyle='#47556955';ctx.font='8px IBM Plex Mono,monospace';
+    ctx.fillText((frac*100).toFixed(0)+'%',cx+4,cy-r*frac+3);
+  });
+
+  // Axes
+  angles.forEach((a,i)=>{
+    ctx.strokeStyle='#1e2d45';ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke();
+    const lx=cx+Math.cos(a)*(r+18),ly=cy+Math.sin(a)*(r+18);
+    ctx.fillStyle='#94a3b8';ctx.font='9px IBM Plex Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(labels[lang][i],lx,ly+3);
+  });
+
+  // Model polygons
+  MODELS.forEach(m=>{
+    ctx.beginPath();
+    angles.forEach((a,i)=>{
+      const v=m.metrics[keys[i]];
+      const x=cx+Math.cos(a)*r*v,y=cy+Math.sin(a)*r*v;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle=m.hex;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=m.hex+'22';ctx.fill();
+  });
+
+  // Legend
+  ctx.textAlign='left';
+  MODELS.forEach((m,i)=>{
+    const lx=8,ly=H-14*(MODELS.length-i)+4;
+    ctx.fillStyle=m.hex;ctx.fillRect(lx,ly-8,10,8);
+    ctx.fillStyle='#94a3b8';ctx.font='9px IBM Plex Mono,monospace';
+    ctx.fillText(m.name[lang],lx+14,ly-1);
+  });
+}
+
+// ══════════════════════════════════════════
+// DECISION BOUNDARY CANVASES
+// ══════════════════════════════════════════
+const RES=22;
+function drawBoundary(idx,modelIdx){
+  const cv=document.getElementById('vc-'+idx);if(!cv)return;
+  const W=cv.offsetWidth||200,H=cv.height;cv.width=W;
+  const ctx=cv.getContext('2d');
+  const model=MODELS[modelIdx];
+  const chol=+document.getElementById('sl-chol').value;
+  const cw=W/RES,ch=H/RES;
+  for(let r=0;r<RES;r++)for(let c=0;c<RES;c++){
+    const age=20+(c/RES)*70,bp=80+(r/RES)*120;
+    const risk=model.logic(age,bp,chol);
+    ctx.fillStyle=`rgba(${Math.round((1-risk)*170)},${Math.round(risk*55)},${Math.round(risk*195)},0.7)`;
+    ctx.fillRect(Math.floor(c*cw),Math.floor(r*ch),Math.ceil(cw)+1,Math.ceil(ch)+1);
+  }
+  // Current patient
+  const age=+document.getElementById('sl-age').value;
+  const bp=+document.getElementById('sl-bp').value;
+  const px=((age-20)/70)*W,py=((bp-80)/120)*H;
+  ctx.beginPath();ctx.arc(px,py,5,0,6.28);
+  ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=1.5;
+  ctx.fill();ctx.stroke();
+}
+function drawLegend(){
+  const cv=document.getElementById('vc-legend');if(!cv)return;
+  const W=cv.offsetWidth||200,H=cv.height;cv.width=W;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  // Gradient
+  const grd=ctx.createLinearGradient(20,H/2,W-20,H/2);
+  grd.addColorStop(0,'rgba(0,180,200,0.7)');
+  grd.addColorStop(0.5,'rgba(100,50,190,0.5)');
+  grd.addColorStop(1,'rgba(170,0,100,0.7)');
+  ctx.fillStyle=grd;ctx.fillRect(20,H/2-12,W-40,24);
+  ctx.fillStyle='#94a3b8';ctx.font='9px IBM Plex Mono,monospace';ctx.textAlign='center';
+  ctx.fillText(lang==='el'?'ΑΣΦΑΛΗΣ':'SAFE',30,H/2+28);
+  ctx.fillText(lang==='el'?'ΚΙΝΔΥΝΟΣ':'AT RISK',W-30,H/2+28);
+  ctx.fillText(lang==='el'?'Χ = Τρέχων ασθενής':'X = Current patient',W/2,H/2-22);
+  // Axes
+  ctx.fillStyle='#475569';
+  ctx.fillText(lang==='el'?'← Ηλικία (20-90) →':'← Age (20-90) →',W/2,H-8);
+  ctx.save();ctx.translate(12,H/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText(lang==='el'?'Πίεση (80-200)':'BP (80-200)',0,0);
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════
+// MATH CARDS
+// ══════════════════════════════════════════
+function renderMathCards(){
+  document.getElementById('math-cards-container').innerHTML=MODELS.map(m=>`
+    <div class="math-card" style="border:1px solid ${m.hex}33">
+      <div style="color:${m.hex};font-size:13px;font-weight:900;margin-bottom:8px">${m.name[lang]}</div>
+      <div style="color:var(--sub);font-size:11px;line-height:1.7;margin-bottom:8px">${m.phil[lang]}</div>
+      <div class="formula" style="border-left-color:${m.hex}">${lang==='el'?m.mathEl:m.mathEn}</div>
+      <div class="mrow">
+        <div class="mpro"><div style="color:var(--c5);font-weight:700;margin-bottom:2px">✅ ${lang==='el'?'Πλεονέκτημα':'Advantage'}</div><div style="color:#a7f3d0">${lang==='el'?m.proEl:m.proEn}</div></div>
+        <div class="mcon"><div style="color:var(--red);font-weight:700;margin-bottom:2px">⚠ ${lang==='el'?'Μειονέκτημα':'Disadvantage'}</div><div style="color:#fca5a5">${lang==='el'?m.conEl:m.conEn}</div></div>
+      </div>
+      <div style="background:var(--hi);border-radius:6px;padding:6px 9px;font-size:10px;margin-top:4px">
+        <span style="color:var(--muted)">${lang==='el'?'Φιλοσοφική βάση:':'Philosophical basis:'}</span>
+        <span style="color:${m.hex}"> ${lang==='el'?m.philEl:m.philEn}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// PHIL CARDS
+// ══════════════════════════════════════════
+const PHILS=[
+  {color:'var(--c1)',hex:'#00d4ff',icon:'→',
+   titleEl:'Παρμενίδης → Προτασιακό',titleEn:'Parmenides → Propositional',
+   quoteEl:'"Το ον είναι — αμετάβλητοι κανόνες"',quoteEn:'"Being is — unchanging rules"',
+   textEl:'Κανόνες if-then. Ο κόσμος λειτουργεί με σταθερές αρχές.',
+   textEn:'If-then rules. The world operates on fixed principles.'},
+  {color:'var(--c2)',hex:'#ff6b35',icon:'∀',
+   titleEl:'Αριστοτέλης → Κατηγορηματικό',titleEn:'Aristotle → Predicate',
+   quoteEl:'"∀x: Γενικοί κανόνες για κατηγορίες"',quoteEn:'"∀x: General rules for categories"',
+   textEl:'Συλλογισμός — από γενικό σε ειδικό. Βάση της λογικής.',
+   textEn:'Syllogism — from general to specific. Foundation of logic.'},
+  {color:'var(--c3)',hex:'#7c3aed',icon:'f∘g',
+   titleEl:'Leibniz → Συναρτησιακό',titleEn:'Leibniz → Functional',
+   quoteEl:'"Σύνθεση — το σύνολο > τα μέρη"',quoteEn:'"Composition — whole > parts"',
+   textEl:'Νευρωνικά δίκτυα: σύνθεση συναρτήσεων layer by layer.',
+   textEn:'Neural networks: function composition layer by layer.'},
+  {color:'var(--c4)',hex:'#f59e0b',icon:'P()',
+   titleEl:'Hume → Πιθανολογικό',titleEn:'Hume → Probabilistic',
+   quoteEl:'"Γνώση μέσω πιθανότητας — όχι βεβαιότητας"',quoteEn:'"Knowledge through probability — not certainty"',
+   textEl:'Bayesian: ενημέρωσε πεποιθήσεις με νέα δεδομένα.',
+   textEn:'Bayesian: update beliefs with new evidence.'},
+  {color:'var(--c5)',hex:'#10b981',icon:'∈',
+   titleEl:'Επίκουρος → Επαγωγικό',titleEn:'Epicurus → Inductive',
+   quoteEl:'"Γνώση από εμπειρία και παρατήρηση"',quoteEn:'"Knowledge from experience and observation"',
+   textEl:'kNN: μάθε από παραδείγματα, χωρίς θεωρία.',
+   textEn:'kNN: learn from examples, without theory.'},
+];
+function renderPhilCards(){
+  document.getElementById('phil-cards-container').innerHTML=PHILS.map(p=>`
+    <div class="pcrd" style="border:1px solid ${p.hex}33">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+        <div style="width:36px;height:36px;border-radius:8px;background:${p.hex}18;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:${p.hex};flex-shrink:0">${p.icon}</div>
+        <div style="color:${p.hex};font-size:12px;font-weight:900">${lang==='el'?p.titleEl:p.titleEn}</div>
+      </div>
+      <div class="pquote" style="border-left:3px solid ${p.hex}">${lang==='el'?p.quoteEl:p.quoteEn}</div>
+      <div style="color:var(--sub);font-size:11px;line-height:1.7">${lang==='el'?p.textEl:p.textEn}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// PATIENT DISPLAY
+// ══════════════════════════════════════════
+function updatePatient(){
+  const age=+document.getElementById('sl-age').value;
+  const bp=+document.getElementById('sl-bp').value;
+  const chol=+document.getElementById('sl-chol').value;
+  document.getElementById('age-val').textContent=age;
+  document.getElementById('bp-val').textContent=bp;
+  document.getElementById('chol-val').textContent=chol;
+  const risk=trueRisk(age,bp,chol);
+  document.getElementById('patient-display').innerHTML=T[lang].patientTxt(age,bp,chol,risk);
+}
+
+// ══════════════════════════════════════════
+// MAIN UPDATE
+// ══════════════════════════════════════════
+function update(){
+  updatePatient();
+  renderCards();
+  MODELS.forEach((_,i)=>drawBoundary(i,i));
+  drawLegend();
+  drawRadar();
+}
+
+// ══════════════════════════════════════════
+// LANG
+// ══════════════════════════════════════════
+let lang='el';
+function setLang(l){
+  lang=l;
+  document.getElementById('btn-el').classList.toggle('active',l==='el');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  const t=T[l];
+  for(const[id,v]of Object.entries(t)){
+    if(typeof v==='string'){const el=document.getElementById(id);if(el)el.innerHTML=v;}
+  }
+  renderMathCards();renderPhilCards();update();
+}
+
+function setTab(id){
+  ['experiment','math','philosophy'].forEach(t=>{
+    document.getElementById('content-'+t).classList.toggle('active',t===id);
+    document.getElementById('tab-'+t.replace('experiment','exp').replace('philosophy','phil')).classList.toggle('active',t===id);
+  });
+  if(id==='math') renderMathCards();
+  if(id==='philosophy') renderPhilCards();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+renderMetrics();
+renderMathCards();
+renderPhilCards();
+update();
+window.addEventListener('resize',()=>{MODELS.forEach((_,i)=>drawBoundary(i,i));drawLegend();drawRadar();});
+</script>
+</body>
+</html>
