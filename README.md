@@ -24,30 +24,42 @@ Each tool is a single self-contained HTML file: no installation, no dependencies
 
 | # | Tool | Topic | Philosopher(s) |
 |---|------|-------|----------------|
-| 1 | **Neurons** | Additive vs Divisive vs Hybrid neurons | Plato · Aristotle · Leibniz |
-| 2 | **ReLU** | Linear vs ReLU vs Sigmoid activations | Parmenides · Heraclitus · Aristotle |
-| 3 | **Vanishing Gradient** | Why deep networks stopped learning | Zeno · Heraclitus · Aristotle |
-| 4 | **Paradigms** | 5 thinking paradigms solve one problem | Parmenides · Aristotle · Leibniz · Hume · Epicurus |
-| 5 | **Δεν Ξέρω** | Why AI doesn't know it doesn't know | Socrates |
-| 6 | **Associationism** | Aristotle's 4 laws of memory → ML | Aristotle |
+| 1 | [**Neurons**](01_neurons/) | Additive vs Divisive vs Hybrid neurons | Plato · Aristotle · Leibniz |
+| 2 | [**ReLU**](02_relu/) | Linear vs ReLU vs Sigmoid activations | Parmenides · Heraclitus · Aristotle |
+| 3 | [**Vanishing Gradient**](04_vanishing_gradient/) | Why deep networks stopped learning | Zeno · Heraclitus · Aristotle |
+| 4 | [**Paradigms**](03_paradigms/) | 5 thinking paradigms solve one problem | Parmenides · Aristotle · Leibniz · Hume · Epicurus |
+| 5 | [**Δεν Ξέρω**](05_den_xero/) | Why AI doesn't know it doesn't know | Socrates |
+| 6 | [**Associationism**](06_associationism/) | Aristotle's 4 laws of memory → ML | Aristotle |
 
-### 1. 🧠 [Neurons Experiment](01_neurons/neurons_experiment.html)
+### 1. 🧠 [Neurons Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/01_neurons/neurons_experiment.html)
 Three neuron types trained live. The **Divisive Neuron** corresponds to a real brain mechanism (Divisive Normalization) and the core of Transformer attention (`QKᵀ/√d`).
 
-### 2. ⚡ [ReLU Experiment](02_relu/relu_experiment.html)
+**Folder:** [01_neurons/](01_neurons/)
+
+### 2. ⚡ [ReLU Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/02_relu/relu_experiment.html)
 An ablation study: same architecture, only the hidden activation changes. Shows why Sigmoid causes vanishing gradient and why ReLU (and then GELU) won.
 
-### 3. 📉 [Vanishing Gradient Experiment](04_vanishing_gradient/vanishing_gradient_experiment.html)
+**Folder:** [02_relu/](02_relu/)
+
+### 3. 📉 [Vanishing Gradient Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/04_vanishing_gradient/vanishing_gradient_experiment.html)
 A depth slider shows how `0.25¹⁰ ≈ 1 in a million` — why Sigmoid killed deep networks, and how ReLU preserved the signal. Verified mathematics.
 
-### 4. 🧩 [Paradigms Experiment](03_paradigms/paradigms_experiment.html)
+**Folder:** [04_vanishing_gradient/](04_vanishing_gradient/)
+
+### 4. 🧩 [Paradigms Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/03_paradigms/paradigms_experiment.html)
 The same problem (cardiac risk) solved five ways — rule-based, predicate logic, neural network, Bayes, kNN — with live evaluation metrics and a radar chart.
 
-### 5. 🤔 [Δεν Ξέρω (I Don't Know)](05_den_xero/den_xero_experiment.html)
+**Folder:** [03_paradigms/](03_paradigms/)
+
+### 5. 🤔 [Δεν Ξέρω (I Don't Know) →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/05_den_xero/den_xero_experiment.html)
 Why language models guess instead of abstaining. Four scenes, fact-checked against OpenAI/Nature (2025) and ICLR 2025. Connected to the book «I DON'T KNOW».
 
-### 6. 🔗 [Associationism Experiment](06_associationism/associationism_experiment.html)
+**Folder:** [05_den_xero/](05_den_xero/)
+
+### 6. 🔗 [Associationism Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/06_associationism/associationism_experiment.html)
 Aristotle's four laws of associative memory (350 BC) mapped to Hebb's rule, gradient descent, embeddings and contrastive learning.
+
+**Folder:** [06_associationism/](06_associationism/)
 
 ---
 
@@ -63,6 +75,14 @@ Aristotle's four laws of associative memory (350 BC) mapped to Hebb's rule, grad
 ## 🚀 Usage
 
 Every tool is one HTML file. Open it in any browser — that's it. No build step, no server, no dependencies.
+
+**Quick links to run experiments:**
+- [🧠 Neurons](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/01_neurons/neurons_experiment.html)
+- [⚡ ReLU](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/02_relu/relu_experiment.html)
+- [📉 Vanishing Gradient](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/04_vanishing_gradient/vanishing_gradient_experiment.html)
+- [🧩 Paradigms](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/03_paradigms/paradigms_experiment.html)
+- [🤔 Δεν Ξέρω](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/05_den_xero/den_xero_experiment.html)
+- [🔗 Associationism](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/06_associationism/associationism_experiment.html)
 
 For GitHub Pages: rename the file to `index.html` in its repository, then enable Pages (Settings → Pages → main → root).
 
@@ -109,30 +129,42 @@ MIT License — free to use, modify and share with attribution.
 
 | # | Εργαλείο | Θέμα | Φιλόσοφος(οι) |
 |---|----------|------|---------------|
-| 1 | **Neurons** | Additive vs Divisive vs Hybrid νευρώνες | Πλάτων · Αριστοτέλης · Leibniz |
-| 2 | **ReLU** | Linear vs ReLU vs Sigmoid activations | Παρμενίδης · Ηράκλειτος · Αριστοτέλης |
-| 3 | **Vanishing Gradient** | Γιατί τα βαθιά δίκτυα σταμάτησαν να μαθαίνουν | Ζήνων · Ηράκλειτος · Αριστοτέλης |
-| 4 | **Paradigms** | 5 παραδείγματα σκέψης λύνουν ένα πρόβλημα | Παρμενίδης · Αριστοτέλης · Leibniz · Hume · Επίκουρος |
-| 5 | **Δεν Ξέρω** | Γιατί το AI δεν ξέρει ότι δεν ξέρει | Σωκράτης |
-| 6 | **Associationism** | Οι 4 νόμοι μνήμης του Αριστοτέλη → ML | Αριστοτέλης |
+| 1 | [**Neurons**](01_neurons/) | Additive vs Divisive vs Hybrid νευρώνες | Πλάτων · Αριστοτέλης · Leibniz |
+| 2 | [**ReLU**](02_relu/) | Linear vs ReLU vs Sigmoid activations | Παρμενίδης · Ηράκλειτος · Αριστοτέλης |
+| 3 | [**Vanishing Gradient**](04_vanishing_gradient/) | Γιατί τα βαθιά δίκτυα σταμάτησαν να μαθαίνουν | Ζήνων · Ηράκλειτος · Αριστοτέλης |
+| 4 | [**Paradigms**](03_paradigms/) | 5 παραδείγματα σκέψης λύνουν ένα πρόβλημα | Παρμενίδης · Αριστοτέλης · Leibniz · Hume · Επίκουρος |
+| 5 | [**Δεν Ξέρω**](05_den_xero/) | Γιατί το AI δεν ξέρει ότι δεν ξέρει | Σωκράτης |
+| 6 | [**Associationism**](06_associationism/) | Οι 4 νόμοι μνήμης του Αριστοτέλη → ML | Αριστοτέλης |
 
-### 1. 🧠 [Neurons Experiment](01_neurons/neurons_experiment.html)
+### 1. 🧠 [Neurons Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/01_neurons/neurons_experiment.html)
 Τρεις τύποι νευρώνα εκπαιδεύονται ζωντανά. Ο **Divisive Neuron** αντιστοιχεί σε πραγματικό μηχανισμό του εγκεφάλου (Divisive Normalization) και στο κέντρο του Transformer attention (`QKᵀ/√d`).
 
-### 2. ⚡ [ReLU Experiment](02_relu/relu_experiment.html)
+**Φάκελος:** [01_neurons/](01_neurons/)
+
+### 2. ⚡ [ReLU Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/02_relu/relu_experiment.html)
 Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο το hidden activation. Δείχνει γιατί η Sigmoid προκαλεί vanishing gradient και γιατί η ReLU (και μετά GELU) νίκησαν.
 
-### 3. 📉 [Vanishing Gradient Experiment](04_vanishing_gradient/vanishing_gradient_experiment.html)
+**Φάκελος:** [02_relu/](02_relu/)
+
+### 3. 📉 [Vanishing Gradient Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/04_vanishing_gradient/vanishing_gradient_experiment.html)
 Ένα slider βάθους δείχνει ότι `0.25¹⁰ ≈ 1 στο εκατομμύριο` — γιατί η Sigmoid σκότωνε τα βαθιά δίκτυα, και πώς η ReLU διατήρησε το σήμα. Επαληθευμένα μαθηματικά.
 
-### 4. 🧩 [Paradigms Experiment](03_paradigms/paradigms_experiment.html)
+**Φάκελος:** [04_vanishing_gradient/](04_vanishing_gradient/)
+
+### 4. 🧩 [Paradigms Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/03_paradigms/paradigms_experiment.html)
 Το ίδιο πρόβλημα (καρδιακός κίνδυνος) λυμένο με πέντε τρόπους — rule-based, predicate logic, neural network, Bayes, kNN — με live δείκτες αξιολόγησης και radar chart.
 
-### 5. 🤔 [Δεν Ξέρω (I Don't Know)](05_den_xero/den_xero_experiment.html)
+**Φάκελος:** [03_paradigms/](03_paradigms/)
+
+### 5. 🤔 [Δεν Ξέρω (I Don't Know) →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/05_den_xero/den_xero_experiment.html)
 Γιατί τα γλωσσικά μοντέλα μαντεύουν αντί να απέχουν. Τέσσερις σκηνές, επαληθευμένες ως προς OpenAI/Nature (2025) και ICLR 2025. Συνδεδεμένη με το βιβλίο «I DON'T KNOW».
 
-### 6. 🔗 [Associationism Experiment](06_associationism/associationism_experiment.html)
+**Φάκελος:** [05_den_xero/](05_den_xero/)
+
+### 6. 🔗 [Associationism Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/06_associationism/associationism_experiment.html)
 Οι τέσσερις νόμοι συνειρμικής μνήμης του Αριστοτέλη (350 π.Χ.) αντιστοιχισμένοι στον κανόνα Hebb, το gradient descent, τα embeddings και contrastive learning.
+
+**Φάκελος:** [06_associationism/](06_associationism/)
 
 ---
 
@@ -148,6 +180,14 @@ Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο τ�
 ## 🚀 Χρήση
 
 Κάθε εργαλείο είναι ένα αρχείο HTML. Άνοιξέ το σε οποιονδήποτε browser — τίποτα άλλο. Χωρίς build, χωρίς server, χωρίς εξαρτήσεις.
+
+**Γρήγορα links για να τρέξετε τα πειράματα:**
+- [🧠 Neurons](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/01_neurons/neurons_experiment.html)
+- [⚡ ReLU](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/02_relu/relu_experiment.html)
+- [📉 Vanishing Gradient](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/04_vanishing_gradient/vanishing_gradient_experiment.html)
+- [🧩 Paradigms](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/03_paradigms/paradigms_experiment.html)
+- [🤔 Δεν Ξέρω](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/05_den_xero/den_xero_experiment.html)
+- [🔗 Associationism](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/06_associationism/associationism_experiment.html)
 
 Για GitHub Pages: μετονόμασε το αρχείο σε `index.html` στο repository του, μετά ενεργοποίησε το Pages (Settings → Pages → main → root).
 
