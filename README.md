@@ -12,11 +12,11 @@
 
 ## 📖 About This Series
 
-**From Plato to Transformers** is a collection of interactive, browser-based tools that explore modern Machine Learning concepts — and the striking ways ancient Greek philosophers described similar ideas about mind, knowledge and reasoning.
+**From Plato to Transformers** is a collection of interactive, browser-based tools that explore modern Machine Learning concepts — and the striking ways ancient Greek philosophers described similar ideas.
 
-Each tool is a single self-contained HTML file: no installation, no dependencies, fully bilingual (🇬🇧 / 🇬🇷), and mobile-responsive. All the ML content is technically accurate and, where it matters, verified against published research.
+Each tool is a single self-contained HTML file: no installation, no dependencies, fully bilingual (🇬🇧 / 🇬🇷), and mobile-responsive. All the ML content is technically accurate and, where it matters, backed by peer-reviewed sources.
 
-**A note on the philosophy:** The philosophical mappings are offered as *analogies that aid understanding* — not as claims that ancient thinkers literally predicted neural networks. Some connections (e.g. Aristotle's laws of association → Hebbian learning) are historically genuine; others (e.g. Plato's division → attention) are illustrative bridges. The goal is insight, not mysticism.
+**A note on the philosophy:** The philosophical mappings are offered as *analogies that aid understanding* — not as claims that ancient thinkers literally predicted neural networks. Some connections run deeper than others; all are documented.
 
 ---
 
@@ -31,29 +31,23 @@ Each tool is a single self-contained HTML file: no installation, no dependencies
 | 5 | **Δεν Ξέρω** | Why AI doesn't know it doesn't know | Socrates |
 | 6 | **Associationism** | Aristotle's 4 laws of memory → ML | Aristotle |
 
-### 1. 🧠 Neurons Experiment
+### 1. 🧠 [Neurons Experiment](01_neurons/neurons_experiment.html)
 Three neuron types trained live. The **Divisive Neuron** corresponds to a real brain mechanism (Divisive Normalization) and the core of Transformer attention (`QKᵀ/√d`).
-→ `neurons_experiment.html`
 
-### 2. ⚡ ReLU Experiment
+### 2. ⚡ [ReLU Experiment](02_relu/relu_experiment.html)
 An ablation study: same architecture, only the hidden activation changes. Shows why Sigmoid causes vanishing gradient and why ReLU (and then GELU) won.
-→ `relu_experiment.html`
 
-### 3. 📉 Vanishing Gradient Experiment
+### 3. 📉 [Vanishing Gradient Experiment](04_vanishing_gradient/vanishing_gradient_experiment.html)
 A depth slider shows how `0.25¹⁰ ≈ 1 in a million` — why Sigmoid killed deep networks, and how ReLU preserved the signal. Verified mathematics.
-→ `vanishing_gradient_experiment.html`
 
-### 4. 🧩 Paradigms Experiment
+### 4. 🧩 [Paradigms Experiment](03_paradigms/paradigms_experiment.html)
 The same problem (cardiac risk) solved five ways — rule-based, predicate logic, neural network, Bayes, kNN — with live evaluation metrics and a radar chart.
-→ `paradigms_experiment.html`
 
-### 5. 🤔 Δεν Ξέρω (I Don't Know)
+### 5. 🤔 [Δεν Ξέρω (I Don't Know)](05_den_xero/den_xero_experiment.html)
 Why language models guess instead of abstaining. Four scenes, fact-checked against OpenAI/Nature (2025) and ICLR 2025. Connected to the book «I DON'T KNOW».
-→ `den_xero_experiment.html`
 
-### 6. 🔗 Associationism Experiment
+### 6. 🔗 [Associationism Experiment](06_associationism/associationism_experiment.html)
 Aristotle's four laws of associative memory (350 BC) mapped to Hebb's rule, gradient descent, embeddings and contrastive learning.
-→ `associationism_experiment.html`
 
 ---
 
@@ -103,11 +97,11 @@ MIT License — free to use, modify and share with attribution.
 
 ## 📖 Σχετικά με τη Σειρά
 
-Το **From Plato to Transformers** είναι μια συλλογή διαδραστικών εργαλείων που τρέχουν στον browser και εξερευνούν έννοιες του σύγχρονου Machine Learning — και τους εντυπωσιακούς τρόπους με τους οποίους αρχαίοι Έλληνες φιλόσοφοι περιέγραψαν παρόμοιες ιδέες για τον νου, τη γνώση και τη λογική.
+Το **From Plato to Transformers** είναι μια συλλογή διαδραστικών εργαλείων που τρέχουν στον browser και εξερευνούν έννοιες του σύγχρονου Machine Learning — και τους εντυπωσιακούς τρόπους με τους οποίους αρχαίοι ελληνικοί φιλόσοφοι περιέγραψαν παρόμοιες ιδέες.
 
-Κάθε εργαλείο είναι ένα αυτόνομο αρχείο HTML: χωρίς εγκατάσταση, χωρίς εξαρτήσεις, πλήρως δίγλωσσο (🇬🇷 / 🇬🇧) και responsive. Όλο το ML περιεχόμενο είναι τεχνικά ακριβές και, όπου χρειάζεται, επαληθευμένο με δημοσιευμένη έρευνα.
+Κάθε εργαλείο είναι ένα αυτόνομο αρχείο HTML: χωρίς εγκατάσταση, χωρίς εξαρτήσεις, πλήρως δίγλωσσο (🇬🇷 / 🇬🇧) και responsive σε mobile. Όλο το ML περιεχόμενο είναι τεχνικά ακριβές και, όπου σχετικό, υποστηρίζεται από peer-reviewed πηγές.
 
-**Σημείωση για τη φιλοσοφία:** Οι φιλοσοφικές αντιστοιχίες προσφέρονται ως *αναλογίες που βοηθούν την κατανόηση* — όχι ως ισχυρισμοί ότι οι αρχαίοι στοχαστές προέβλεψαν κυριολεκτικά τα νευρωνικά δίκτυα. Κάποιες συνδέσεις (π.χ. οι νόμοι συσχέτισης του Αριστοτέλη → μάθηση Hebb) είναι ιστορικά πραγματικές· άλλες (π.χ. η διαίρεση του Πλάτωνα → attention) είναι επεξηγηματικές γέφυρες. Ο στόχος είναι η κατανόηση, όχι ο μυστικισμός.
+**Σημείωση για τη φιλοσοφία:** Οι φιλοσοφικές αντιστοιχίες προσφέρονται ως *αναλογίες που βοηθούν την κατανόηση* — όχι ως ισχυρισμοί ότι αρχαίοι στοχαστές κυριολεκτικά προέβλεψαν τα νευρωνικά δίκτυα. Ορισμένες συνδέσεις είναι βαθύτερες από άλλες· όλες τεκμηριώνονται.
 
 ---
 
@@ -122,29 +116,23 @@ MIT License — free to use, modify and share with attribution.
 | 5 | **Δεν Ξέρω** | Γιατί το AI δεν ξέρει ότι δεν ξέρει | Σωκράτης |
 | 6 | **Associationism** | Οι 4 νόμοι μνήμης του Αριστοτέλη → ML | Αριστοτέλης |
 
-### 1. 🧠 Neurons Experiment
-Τρεις τύποι νευρώνα εκπαιδεύονται ζωντανά. Ο **Divisive Neuron** αντιστοιχεί σε πραγματικό μηχανισμό του εγκεφάλου (Divisive Normalization) και στον πυρήνα του attention των Transformers (`QKᵀ/√d`).
-→ `neurons_experiment.html`
+### 1. 🧠 [Neurons Experiment](01_neurons/neurons_experiment.html)
+Τρεις τύποι νευρώνα εκπαιδεύονται ζωντανά. Ο **Divisive Neuron** αντιστοιχεί σε πραγματικό μηχανισμό του εγκεφάλου (Divisive Normalization) και στο κέντρο του Transformer attention (`QKᵀ/√d`).
 
-### 2. ⚡ ReLU Experiment
-Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο το hidden activation. Δείχνει γιατί η Sigmoid προκαλεί vanishing gradient και γιατί επικράτησε η ReLU (και μετά το GELU).
-→ `relu_experiment.html`
+### 2. ⚡ [ReLU Experiment](02_relu/relu_experiment.html)
+Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο το hidden activation. Δείχνει γιατί η Sigmoid προκαλεί vanishing gradient και γιατί η ReLU (και μετά GELU) νίκησαν.
 
-### 3. 📉 Vanishing Gradient Experiment
+### 3. 📉 [Vanishing Gradient Experiment](04_vanishing_gradient/vanishing_gradient_experiment.html)
 Ένα slider βάθους δείχνει ότι `0.25¹⁰ ≈ 1 στο εκατομμύριο` — γιατί η Sigmoid σκότωνε τα βαθιά δίκτυα, και πώς η ReLU διατήρησε το σήμα. Επαληθευμένα μαθηματικά.
-→ `vanishing_gradient_experiment.html`
 
-### 4. 🧩 Paradigms Experiment
+### 4. 🧩 [Paradigms Experiment](03_paradigms/paradigms_experiment.html)
 Το ίδιο πρόβλημα (καρδιακός κίνδυνος) λυμένο με πέντε τρόπους — rule-based, predicate logic, neural network, Bayes, kNN — με live δείκτες αξιολόγησης και radar chart.
-→ `paradigms_experiment.html`
 
-### 5. 🤔 Δεν Ξέρω
-Γιατί τα γλωσσικά μοντέλα μαντεύουν αντί να απέχουν. Τέσσερις σκηνές, επαληθευμένες με OpenAI/Nature (2025) και ICLR 2025. Σύνδεση με το βιβλίο «ΔΕΝ ΞΕΡΩ».
-→ `den_xero_experiment.html`
+### 5. 🤔 [Δεν Ξέρω (I Don't Know)](05_den_xero/den_xero_experiment.html)
+Γιατί τα γλωσσικά μοντέλα μαντεύουν αντί να απέχουν. Τέσσερις σκηνές, επαληθευμένες ως προς OpenAI/Nature (2025) και ICLR 2025. Συνδεδεμένη με το βιβλίο «I DON'T KNOW».
 
-### 6. 🔗 Associationism Experiment
-Οι τέσσερις νόμοι συνειρμικής μνήμης του Αριστοτέλη (350 π.Χ.) αντιστοιχισμένοι στον κανόνα Hebb, το gradient descent, τα embeddings και το contrastive learning.
-→ `associationism_experiment.html`
+### 6. 🔗 [Associationism Experiment](06_associationism/associationism_experiment.html)
+Οι τέσσερις νόμοι συνειρμικής μνήμης του Αριστοτέλη (350 π.Χ.) αντιστοιχισμένοι στον κανόνα Hebb, το gradient descent, τα embeddings και contrastive learning.
 
 ---
 
