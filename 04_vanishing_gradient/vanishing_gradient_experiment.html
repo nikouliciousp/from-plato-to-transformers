@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vanishing Gradient | Sigmoid vs Tanh vs ReLU vs GELU</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#07090f;--panel:#111827;--border:#1e2d45;
+  --sig:#00d4ff;--tanh:#f59e0b;--relu:#ff6b35;--gelu:#10b981;
+  --accent3:#7c3aed;--red:#ef4444;--text:#e2e8f0;--muted:#475569;--sub:#94a3b8;--hi:#0a0e1a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;padding:14px;max-width:760px;margin:0 auto}
+.lang-bar{display:flex;justify-content:flex-end;gap:6px;margin-bottom:14px}
+.lang-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.lang-btn.active{border-color:var(--sig);background:#00d4ff18;color:var(--sig)}
+.hdr{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-sup{font-size:10px;letter-spacing:5px;color:var(--accent3);margin-bottom:5px}
+.hdr-title{font-size:21px;font-weight:900;line-height:1.3;margin-bottom:4px}
+.hdr-sub{color:var(--muted);font-size:11px;line-height:1.6}
+.tabs{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:80px;padding:8px 4px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--border);color:var(--text)}
+.tab-content{display:none}.tab-content.active{display:block}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.plbl{font-size:9px;letter-spacing:3px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.cbox{background:var(--hi);border-radius:7px;padding:8px 12px;margin-bottom:7px;font-size:11px;line-height:1.7}
+.cbox-title{font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.intro-box{background:#7c3aed11;border:1px solid #7c3aed44;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--sub)}
+.intro-box strong{color:var(--text)}
+/* DEPTH SLIDER */
+.depth-panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.depth-label{font-size:10px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.depth-label b{color:var(--text);font-size:16px}
+input[type=range]{width:100%;accent-color:var(--accent3);height:5px;cursor:pointer}
+/* ACTIVATION GRID */
+.act-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:640px){.act-grid{grid-template-columns:repeat(2,1fr)}}
+.act-card{background:var(--panel);border:2px solid var(--border);border-radius:10px;padding:10px;transition:all .3s}
+.act-card.alive{box-shadow:0 0 16px 1px var(--ac)}
+.act-card.dead{opacity:.45}
+.act-name{font-size:11px;font-weight:700;margin-bottom:2px}
+.act-formula{font-size:8px;color:var(--muted);margin-bottom:6px;min-height:20px}
+.act-grad-label{font-size:8px;color:var(--muted);letter-spacing:1px}
+.act-grad-val{font-size:15px;font-weight:900;margin-bottom:4px}
+.act-status{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;display:inline-block}
+.act-status.ok{background:#10b98122;color:var(--gelu)}
+.act-status.weak{background:#f59e0b22;color:var(--tanh)}
+.act-status.dead{background:#ef444422;color:var(--red)}
+/* SIGNAL BAR VISUAL */
+.signal-viz{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.signal-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.signal-name{font-size:10px;font-weight:700;width:70px;flex-shrink:0}
+.signal-track{flex:1;height:22px;background:var(--hi);border-radius:5px;overflow:hidden;position:relative}
+.signal-fill{height:100%;border-radius:5px;transition:width .5s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:8px;font-weight:700;color:#000;min-width:2px}
+.signal-pct{font-size:9px;width:90px;text-align:right;flex-shrink:0;color:var(--sub)}
+/* CHART */
+.chart-wrap{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+canvas{display:block;width:100%!important}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--sub)}
+.cl-dot{width:12px;height:3px;border-radius:2px}
+/* MATH */
+.math-card{background:var(--panel);border-radius:12px;padding:14px;margin-bottom:10px}
+.formula{background:var(--hi);border-radius:8px;padding:10px 14px;margin:6px 0;border-left:3px solid var(--accent3);font-size:12px;line-height:2;overflow-x:auto}
+.formula .hl{font-weight:700}
+.mrow{display:flex;gap:7px;margin:7px 0}
+@media(max-width:520px){.mrow{flex-direction:column}}
+.mpro{flex:1;background:#10b98111;border-radius:6px;padding:7px 9px;font-size:10px}
+.mcon{flex:1;background:#ef444411;border-radius:6px;padding:7px 9px;font-size:10px}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-top:7px}
+th{padding:6px 7px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:6px 7px;border-bottom:1px solid var(--hi)}
+.pcrd{background:var(--panel);border-radius:12px;padding:12px;margin-bottom:9px}
+.pquote{border-radius:6px;padding:6px 9px;margin-bottom:7px;font-size:11px;font-style:italic;color:var(--sub)}
+.pico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.footer{text-align:center;padding:14px 0 6px;color:var(--muted);font-size:10px;line-height:1.8}
+.timeline-item{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.timeline-year{font-size:11px;font-weight:700;width:80px;flex-shrink:0;color:var(--accent3)}
+.timeline-body{flex:1;font-size:11px;line-height:1.6;color:var(--sub)}
+.timeline-body b{color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('el')" id="btn-el">🇬🇷 ΕΛ</button>
+  <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 EN</button>
+</div>
+
+<div class="hdr">
+  <div class="hdr-sup" id="h-sup">ΤΟ ΠΡΟΒΛΗΜΑ ΠΟΥ ΕΜΠΟΔΙΣΕ ΤΟ DEEP LEARNING ΓΙΑ 10 ΧΡΟΝΙΑ</div>
+  <div class="hdr-title" id="h-title">Vanishing Gradient</div>
+  <div class="hdr-sub" id="h-sub">Γιατί η Sigmoid σκότωνε τα βαθιά δίκτυα — και πώς η ReLU τα έσωσε</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('demo')" id="tab-demo">🔬 <span id="t1">Πείραμα</span></button>
+  <button class="tab-btn" onclick="setTab('curves')" id="tab-curves">📈 <span id="t2">Καμπύλες</span></button>
+  <button class="tab-btn" onclick="setTab('math')" id="tab-math">📐 <span id="t3">Μαθηματικά</span></button>
+  <button class="tab-btn" onclick="setTab('story')" id="tab-story">📜 <span id="t4">Ιστορία</span></button>
+  <button class="tab-btn" onclick="setTab('phil')" id="tab-phil">🏛 <span id="t5">Φιλοσοφία</span></button>
+</div>
+
+<!-- ═══ DEMO ═══ -->
+<div class="tab-content active" id="content-demo">
+  <div class="intro-box" id="intro">
+    <strong>📌 Το Πείραμα:</strong> Ένα σήμα εκπαίδευσης (gradient) ξεκινά από το τελευταίο layer με τιμή 100% και ταξιδεύει προς τα πίσω. Σε κάθε layer πολλαπλασιάζεται με την παράγωγο της activation function. Κούνα το βάθος και δες πόσο σήμα φτάνει στο πρώτο layer.
+  </div>
+
+  <div class="depth-panel">
+    <div class="depth-label">
+      <span id="depth-text">Βάθος δικτύου (αριθμός layers)</span>
+      <b id="depth-val">10</b>
+    </div>
+    <input type="range" id="depth-slider" min="1" max="30" value="10" oninput="update()">
+  </div>
+
+  <div class="plbl" style="color:var(--muted);margin-bottom:8px" id="act-lbl">ΠΑΡΑΓΩΓΟΣ ΑΝΑ ACTIVATION (στο καλύτερο σημείο)</div>
+  <div class="act-grid" id="act-grid"></div>
+
+  <div class="signal-viz">
+    <div class="plbl" style="color:var(--muted)" id="signal-lbl">ΠΟΣΟ ΣΗΜΑ ΦΤΑΝΕΙ ΣΤΟ ΠΡΩΤΟ LAYER;</div>
+    <div id="signal-rows"></div>
+    <div style="font-size:9px;color:var(--muted);margin-top:6px;line-height:1.6" id="signal-note"></div>
+  </div>
+</div>
+
+<!-- ═══ CURVES ═══ -->
+<div class="tab-content" id="content-curves">
+  <div class="chart-wrap">
+    <div class="plbl" style="color:var(--muted)" id="fn-lbl">ΟΙ ΣΥΝΑΡΤΗΣΕΙΣ — f(x)</div>
+    <canvas id="fn-chart" height="220"></canvas>
+    <div class="chart-legend" id="fn-legend"></div>
+  </div>
+  <div class="chart-wrap">
+    <div class="plbl" style="color:var(--muted)" id="grad-lbl">ΟΙ ΠΑΡΑΓΩΓΟΙ — f'(x) — ΕΔΩ ΚΡΥΒΕΤΑΙ ΤΟ ΠΡΟΒΛΗΜΑ</div>
+    <canvas id="grad-chart" height="220"></canvas>
+    <div class="chart-legend" id="grad-legend"></div>
+    <div class="cbox" style="margin-top:10px" id="grad-explain"></div>
+  </div>
+</div>
+
+<!-- ═══ MATH ═══ -->
+<div class="tab-content" id="content-math">
+  <div id="math-container"></div>
+</div>
+
+<!-- ═══ STORY ═══ -->
+<div class="tab-content" id="content-story">
+  <div class="panel">
+    <div class="plbl" style="color:var(--accent3)" id="story-lbl">Η ΧΡΟΝΟΛΟΓΙΑ ΜΙΑΣ ΑΝΑΚΑΛΥΨΗΣ</div>
+    <div id="timeline"></div>
+  </div>
+</div>
+
+<!-- ═══ PHILOSOPHY ═══ -->
+<div class="tab-content" id="content-phil">
+  <div id="phil-container"></div>
+</div>
+
+<div class="footer">
+  <div id="footer-txt">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+  <div style="margin-top:3px;color:#334155">From Plato to Transformers</div>
+</div>
+
+<script>
+const T={
+  el:{
+    "h-sup":"ΤΟ ΠΡΟΒΛΗΜΑ ΠΟΥ ΕΜΠΟΔΙΣΕ ΤΟ DEEP LEARNING ΓΙΑ 10 ΧΡΟΝΙΑ",
+    "h-title":"Vanishing Gradient",
+    "h-sub":"Γιατί η Sigmoid σκότωνε τα βαθιά δίκτυα — και πώς η ReLU τα έσωσε",
+    "t1":"Πείραμα","t2":"Καμπύλες","t3":"Μαθηματικά","t4":"Ιστορία","t5":"Φιλοσοφία",
+    "intro":`<strong>📌 Το Πείραμα:</strong> Ένα σήμα εκπαίδευσης (gradient / κλίση) ξεκινά από το τελευταίο layer με τιμή 100% και ταξιδεύει προς τα πίσω. Σε κάθε layer πολλαπλασιάζεται με την παράγωγο της activation function. Κούνα το βάθος και δες πόσο σήμα φτάνει στο πρώτο layer.`,
+    "depth-text":"Βάθος δικτύου (αριθμός layers)",
+    "act-lbl":"ΠΑΡΑΓΩΓΟΣ ΑΝΑ ACTIVATION (στο καλύτερο σημείο)",
+    "signal-lbl":"ΠΟΣΟ ΣΗΜΑ ΦΤΑΝΕΙ ΣΤΟ ΠΡΩΤΟ LAYER;",
+    "fn-lbl":"ΟΙ ΣΥΝΑΡΤΗΣΕΙΣ — f(x)",
+    "grad-lbl":"ΟΙ ΠΑΡΑΓΩΓΟΙ — f'(x) — ΕΔΩ ΚΡΥΒΕΤΑΙ ΤΟ ΠΡΟΒΛΗΜΑ",
+    "story-lbl":"Η ΧΡΟΝΟΛΟΓΙΑ ΜΙΑΣ ΑΝΑΚΑΛΥΨΗΣ",
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "actNames":{sigmoid:"Sigmoid",tanh:"Tanh",relu:"ReLU",gelu:"GELU"},
+    "actStatus":{ok:"ΥΓΙΕΣ",weak:"ΑΔΥΝΑΜΟ",dead:"ΝΕΚΡΟ"},
+    "reaches":"φτάνει",
+    "signalNote":(d,sigVal)=>`Σε δίκτυο ${d} layers, η Sigmoid αφήνει να περάσει μόλις <b style="color:#00d4ff">${sigVal}</b> του αρχικού σήματος. Τα πρώτα layers ουσιαστικά <b style="color:#ef4444">παγώνουν</b> — αυτό είναι το vanishing gradient.`,
+    "gradExplain":`Η <b style="color:#00d4ff">Sigmoid</b> έχει μέγιστη παράγωγο μόλις <b>0.25</b> — κάθε layer κόβει το σήμα στο ¼. Η <b style="color:#f59e0b">Tanh</b> φτάνει το 1.0 αλλά πλατύνει στα άκρα. Η <b style="color:#ff6b35">ReLU</b> έχει παράγωγο σταθερά <b>1</b> για θετικές τιμές — το σήμα περνά αναλλοίωτο. Η <b style="color:#10b981">GELU</b> είναι ομαλή έκδοση της ReLU.`,
+    "fnLegend":["Sigmoid","Tanh","ReLU","GELU"],
+    "timeline":[
+      {y:"1986",el:`<b>Sigmoid</b> καθιερώνεται με το backpropagation. Συμπιέζει την έξοδο σε [0,1]. Όλοι τη χρησιμοποιούν.`},
+      {y:"1991",el:`Ο <b>Sepp Hochreiter</b> περιγράφει επίσημα το <b>vanishing gradient problem</b> στη διατριβή του. Τα βαθιά δίκτυα δεν μαθαίνουν.`},
+      {y:"1997-2010",el:`Δοκιμάζεται η <b>Tanh</b> (μέγιστη παράγωγος 1.0, 4× καλύτερη). Βοηθά, αλλά το πρόβλημα επιμένει σε μεγάλο βάθος.`},
+      {y:"2011",el:`Οι <b>Glorot, Bordes & Bengio</b> δείχνουν ότι η <b>ReLU</b> λύνει το πρόβλημα — παράγωγος σταθερά 1 για θετικά.`},
+      {y:"2012",el:`Το <b>AlexNet</b> κερδίζει το ImageNet με ReLU — εκπαιδεύεται <b>6× γρηγορότερα</b>. Ξεκινά η σύγχρονη εποχή του Deep Learning.`},
+      {y:"2016+",el:`Το <b>GELU</b> (ομαλή ReLU) γίνεται standard στους <b>Transformers</b> — GPT, BERT, Claude. Λύνει και το dead neuron πρόβλημα.`},
+    ],
+  },
+  en:{
+    "h-sup":"THE PROBLEM THAT BLOCKED DEEP LEARNING FOR 10 YEARS",
+    "h-title":"Vanishing Gradient",
+    "h-sub":"Why Sigmoid killed deep networks — and how ReLU saved them",
+    "t1":"Demo","t2":"Curves","t3":"Mathematics","t4":"History","t5":"Philosophy",
+    "intro":`<strong>📌 The Experiment:</strong> A training signal (gradient) starts at the last layer with value 100% and travels backwards. At each layer it gets multiplied by the activation function's derivative. Drag the depth and see how much signal reaches the first layer.`,
+    "depth-text":"Network depth (number of layers)",
+    "act-lbl":"DERIVATIVE PER ACTIVATION (at its best point)",
+    "signal-lbl":"HOW MUCH SIGNAL REACHES THE FIRST LAYER?",
+    "fn-lbl":"THE FUNCTIONS — f(x)",
+    "grad-lbl":"THE DERIVATIVES — f'(x) — THIS IS WHERE THE PROBLEM HIDES",
+    "story-lbl":"THE TIMELINE OF A DISCOVERY",
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "actNames":{sigmoid:"Sigmoid",tanh:"Tanh",relu:"ReLU",gelu:"GELU"},
+    "actStatus":{ok:"HEALTHY",weak:"WEAK",dead:"DEAD"},
+    "reaches":"reaches",
+    "signalNote":(d,sigVal)=>`In a ${d}-layer network, Sigmoid lets through only <b style="color:#00d4ff">${sigVal}</b> of the original signal. The early layers essentially <b style="color:#ef4444">freeze</b> — this is the vanishing gradient.`,
+    "gradExplain":`<b style="color:#00d4ff">Sigmoid</b> has a maximum derivative of just <b>0.25</b> — each layer cuts the signal to ¼. <b style="color:#f59e0b">Tanh</b> reaches 1.0 but flattens at the edges. <b style="color:#ff6b35">ReLU</b> has a constant derivative of <b>1</b> for positive values — the signal passes through unchanged. <b style="color:#10b981">GELU</b> is a smooth version of ReLU.`,
+    "fnLegend":["Sigmoid","Tanh","ReLU","GELU"],
+    "timeline":[
+      {y:"1986",el:`<b>Sigmoid</b> becomes standard with backpropagation. Squashes output to [0,1]. Everyone uses it.`},
+      {y:"1991",el:`<b>Sepp Hochreiter</b> formally describes the <b>vanishing gradient problem</b> in his thesis. Deep networks won't learn.`},
+      {y:"1997-2010",el:`<b>Tanh</b> is tried (max derivative 1.0, 4× better). It helps, but the problem persists at great depth.`},
+      {y:"2011",el:`<b>Glorot, Bordes & Bengio</b> show that <b>ReLU</b> solves the problem — derivative constant at 1 for positives.`},
+      {y:"2012",el:`<b>AlexNet</b> wins ImageNet with ReLU — trains <b>6× faster</b>. The modern era of Deep Learning begins.`},
+      {y:"2016+",el:`<b>GELU</b> (smooth ReLU) becomes standard in <b>Transformers</b> — GPT, BERT, Claude. Also solves the dead neuron problem.`},
+    ],
+  }
+};
+
+// ── ACTIVATION DATA ──
+const ACTS=[
+  {id:'sigmoid',hex:'#00d4ff',maxGrad:0.25,formulaEl:'σ(x)=1/(1+e⁻ˣ)',fn:x=>1/(1+Math.exp(-x)),grad:x=>{const s=1/(1+Math.exp(-x));return s*(1-s);}},
+  {id:'tanh',hex:'#f59e0b',maxGrad:1.0,formulaEl:'tanh(x)',fn:x=>Math.tanh(x),grad:x=>1-Math.tanh(x)**2},
+  {id:'relu',hex:'#ff6b35',maxGrad:1.0,formulaEl:'max(0,x)',fn:x=>Math.max(0,x),grad:x=>x>0?1:0},
+  {id:'gelu',hex:'#10b981',maxGrad:1.0,formulaEl:'x·Φ(x)',fn:x=>0.5*x*(1+Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x**3))),grad:x=>{const c=Math.sqrt(2/Math.PI);const t=Math.tanh(c*(x+0.044715*x**3));return 0.5*(1+t)+0.5*x*(1-t*t)*c*(1+3*0.044715*x*x);}},
+];
+
+let lang='el';
+function setLang(l){
+  lang=l;
+  document.getElementById('btn-el').classList.toggle('active',l==='el');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  const t=T[l];
+  for(const[id,v]of Object.entries(t)){
+    if(typeof v==='string'){const el=document.getElementById(id);if(el)el.innerHTML=v;}
+  }
+  renderMath();renderTimeline();renderPhil();update();
+}
+
+// ── DEMO ──
+function update(){
+  const depth=+document.getElementById('depth-slider').value;
+  document.getElementById('depth-val').textContent=depth;
+  const t=T[lang];
+
+  // Act cards
+  document.getElementById('act-grid').innerHTML=ACTS.map(a=>{
+    const signal=Math.pow(a.maxGrad,depth);
+    let status,statusClass;
+    if(a.id==='relu'||a.id==='gelu'){status='ok';statusClass='ok';}
+    else if(signal>0.001){status='weak';statusClass='weak';}
+    else {status='dead';statusClass='dead';}
+    const alive=(a.id==='relu'||a.id==='gelu');
+    return `<div class="act-card ${alive?'alive':signal<0.001?'dead':''}" style="border-color:${a.hex}44;--ac:${a.hex}">
+      <div class="act-name" style="color:${a.hex}">${t.actNames[a.id]}</div>
+      <div class="act-formula">${a.formulaEl}</div>
+      <div class="act-grad-label">${lang==='el'?'ΜΕΓ. ΠΑΡΑΓΩΓΟΣ':'MAX DERIV.'}</div>
+      <div class="act-grad-val" style="color:${a.hex}">${a.maxGrad}</div>
+      <span class="act-status ${statusClass}">${t.actStatus[status]}</span>
+    </div>`;
+  }).join('');
+
+  // Signal bars
+  document.getElementById('signal-rows').innerHTML=ACTS.map(a=>{
+    const signal=Math.pow(a.maxGrad,depth);
+    const pct=signal*100;
+    let displayPct;
+    if(pct>=1) displayPct=pct.toFixed(1)+'%';
+    else if(pct>=0.0001) displayPct=pct.toFixed(4)+'%';
+    else if(pct>0) displayPct='~'+pct.toExponential(1)+'%';
+    else displayPct='0%';
+    const barW=Math.max(0.5,Math.min(100,pct));
+    return `<div class="signal-row">
+      <div class="signal-name" style="color:${a.hex}">${t.actNames[a.id]}</div>
+      <div class="signal-track"><div class="signal-fill" style="width:${barW}%;background:${a.hex}">${barW>15?displayPct:''}</div></div>
+      <div class="signal-pct">${barW<=15?displayPct:''}</div>
+    </div>`;
+  }).join('');
+
+  // Note
+  const sigSignal=Math.pow(0.25,depth)*100;
+  let sigDisplay;
+  if(sigSignal>=0.01) sigDisplay=sigSignal.toFixed(3)+'%';
+  else sigDisplay='~'+sigSignal.toExponential(1)+'%';
+  document.getElementById('signal-note').innerHTML=t.signalNote(depth,sigDisplay);
+}
+
+// ── CURVES ──
+function drawChart(canvasId,which){
+  const cv=document.getElementById(canvasId);if(!cv)return;
+  cv.width=cv.offsetWidth||640;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=34,padB=22,padT=10,padR=10;
+  const plotW=W-padL-padR,plotH=H-padB-padT;
+  const xMin=-6,xMax=6;
+  const yMin=which==='fn'?-1.1:-0.05,yMax=which==='fn'?1.6:1.1;
+  const tx=x=>padL+((x-xMin)/(xMax-xMin))*plotW;
+  const ty=y=>padT+(1-(y-yMin)/(yMax-yMin))*plotH;
+
+  // grid
+  ctx.strokeStyle='#1e2d4544';ctx.lineWidth=.5;
+  for(let gx=-6;gx<=6;gx+=2){ctx.beginPath();ctx.moveTo(tx(gx),padT);ctx.lineTo(tx(gx),H-padB);ctx.stroke();}
+  const yStep=which==='fn'?0.5:0.25;
+  for(let gy=Math.ceil(yMin/yStep)*yStep;gy<=yMax;gy+=yStep){
+    ctx.beginPath();ctx.moveTo(padL,ty(gy));ctx.lineTo(W-padR,ty(gy));ctx.stroke();
+    ctx.fillStyle='#47556988';ctx.font='8px IBM Plex Mono,monospace';ctx.textAlign='right';
+    ctx.fillText(gy.toFixed(2),padL-3,ty(gy)+3);
+  }
+  // x axis
+  ctx.strokeStyle='#475569';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(padL,ty(0));ctx.lineTo(W-padR,ty(0));ctx.stroke();
+  ctx.textAlign='center';
+  for(let gx=-6;gx<=6;gx+=2){ctx.fillStyle='#475569';ctx.fillText(gx,tx(gx),H-padB+12);}
+
+  // highlight 0.25 line for grad chart
+  if(which==='grad'){
+    ctx.strokeStyle='#00d4ff55';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.moveTo(padL,ty(0.25));ctx.lineTo(W-padR,ty(0.25));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#00d4ff';ctx.font='bold 9px IBM Plex Mono,monospace';ctx.textAlign='left';
+    ctx.fillText('0.25 ← Sigmoid max',tx(1),ty(0.25)-4);
+  }
+
+  // curves
+  ACTS.forEach(a=>{
+    ctx.strokeStyle=a.hex;ctx.lineWidth=2.2;ctx.beginPath();
+    let first=true;
+    for(let px=0;px<=plotW;px++){
+      const x=xMin+(px/plotW)*(xMax-xMin);
+      const y=which==='fn'?a.fn(x):a.grad(x);
+      const cx=padL+px,cy=ty(y);
+      if(first){ctx.moveTo(cx,cy);first=false;}else ctx.lineTo(cx,cy);
+    }
+    ctx.stroke();
+  });
+
+  // legend
+  const legendId=which==='fn'?'fn-legend':'grad-legend';
+  document.getElementById(legendId).innerHTML=ACTS.map(a=>`<div class="cl-item"><div class="cl-dot" style="background:${a.hex}"></div><span style="color:${a.hex}">${T[lang].actNames[a.id]}</span></div>`).join('');
+}
+function drawCurves(){drawChart('fn-chart','fn');drawChart('grad-chart','grad');}
+
+// ── MATH ──
+function renderMath(){
+  const isEl=lang==='el';
+  document.getElementById('math-container').innerHTML=`
+    <div class="math-card" style="border:1px solid #7c3aed33">
+      <div style="color:#a78bfa;font-size:13px;font-weight:900;margin-bottom:8px">${isEl?'Πώς Πολλαπλασιάζεται το Gradient':'How the Gradient Multiplies'}</div>
+      <div style="color:var(--sub);font-size:11px;line-height:1.7;margin-bottom:8px">${isEl?'Στο backpropagation, το gradient περνά από κάθε layer και πολλαπλασιάζεται με την παράγωγο της activation. Η αλυσίδα αυτή (chain rule) είναι το κλειδί.':'In backpropagation, the gradient passes through each layer multiplied by the activation derivative. This chain rule is the key.'}</div>
+      <div class="formula">
+        <span style="color:var(--accent3)">∂L/∂w₁</span> = <span style="color:#00d4ff">f'(z_L)</span> · <span style="color:#00d4ff">f'(z_{L-1})</span> · ... · <span style="color:#00d4ff">f'(z_1)</span> · x
+        <span style="color:var(--muted);font-size:9px;display:block;margin-top:4px">${isEl?'// L παράγωγοι πολλαπλασιάζονται — μία ανά layer':'// L derivatives multiplied — one per layer'}</span>
+      </div>
+    </div>
+
+    <div class="math-card" style="border:1px solid #00d4ff33">
+      <div style="color:#00d4ff;font-size:13px;font-weight:900;margin-bottom:8px">Sigmoid — ${isEl?'Το Πρόβλημα':'The Problem'}</div>
+      <div class="formula" style="border-left-color:#00d4ff">
+        σ(x) = 1/(1+e⁻ˣ)<br>
+        σ'(x) = σ(x)·(1−σ(x))<br>
+        <span style="color:#00d4ff;font-weight:700">max σ'(x) = 0.25</span> <span style="color:var(--muted);font-size:9px">${isEl?'(στο x=0)':'(at x=0)'}</span>
+      </div>
+      <div class="cbox">
+        <div class="cbox-title">${isEl?'Σε 10 layers':'Across 10 layers'}</div>
+        <div style="color:var(--text)">0.25¹⁰ = 0.00000095 ≈ <span style="color:#ef4444;font-weight:700">${isEl?'1 στο εκατομμύριο':'1 in a million'}</span></div>
+      </div>
+      <div class="mrow">
+        <div class="mpro"><div style="color:var(--gelu);font-weight:700;margin-bottom:2px">✅</div><div style="color:#a7f3d0">${isEl?'Ομαλή, έξοδος σε [0,1] — ιδανική για output':'Smooth, output in [0,1] — ideal for output'}</div></div>
+        <div class="mcon"><div style="color:var(--red);font-weight:700;margin-bottom:2px">⚠</div><div style="color:#fca5a5">${isEl?'Vanishing gradient σε hidden layers':'Vanishing gradient in hidden layers'}</div></div>
+      </div>
+    </div>
+
+    <div class="math-card" style="border:1px solid #f59e0b33">
+      <div style="color:#f59e0b;font-size:13px;font-weight:900;margin-bottom:8px">Tanh — ${isEl?'Η Μισή Λύση':'The Half Solution'}</div>
+      <div class="formula" style="border-left-color:#f59e0b">
+        tanh(x) = (eˣ−e⁻ˣ)/(eˣ+e⁻ˣ)<br>
+        tanh'(x) = 1 − tanh²(x)<br>
+        <span style="color:#f59e0b;font-weight:700">max tanh'(x) = 1.0</span> <span style="color:var(--muted);font-size:9px">${isEl?'(4× καλύτερη από Sigmoid)':'(4× better than Sigmoid)'}</span>
+      </div>
+      <div class="cbox">
+        <div style="color:var(--sub);font-size:10px">${isEl?'Καλύτερη — αλλά στα άκρα πλατύνει επίσης. Σε μεγάλο βάθος, ίδιο πρόβλημα.':'Better — but also flattens at the edges. At great depth, same problem.'}</div>
+      </div>
+    </div>
+
+    <div class="math-card" style="border:1px solid #ff6b3333">
+      <div style="color:#ff6b35;font-size:13px;font-weight:900;margin-bottom:8px">ReLU — ${isEl?'Η Λύση':'The Solution'}</div>
+      <div class="formula" style="border-left-color:#ff6b35">
+        ReLU(x) = max(0, x)<br>
+        ReLU'(x) = 1 ${isEl?'αν':'if'} x>0, ${isEl?'αλλιώς':'else'} 0<br>
+        <span style="color:#ff6b35;font-weight:700">${isEl?'παράγωγος = 1 πάντα (θετικά)':'derivative = 1 always (positives)'}</span>
+      </div>
+      <div class="cbox">
+        <div class="cbox-title">${isEl?'Σε 100 layers':'Across 100 layers'}</div>
+        <div style="color:var(--text)">1¹⁰⁰ = <span style="color:#10b981;font-weight:700">1.0 ${isEl?'— αναλλοίωτο!':'— unchanged!'}</span></div>
+      </div>
+      <div class="mrow">
+        <div class="mpro"><div style="color:var(--gelu);font-weight:700;margin-bottom:2px">✅</div><div style="color:#a7f3d0">${isEl?'Δεν εξαφανίζεται. AlexNet 2012: 6× ταχύτερο':'No vanishing. AlexNet 2012: 6× faster'}</div></div>
+        <div class="mcon"><div style="color:var(--red);font-weight:700;margin-bottom:2px">⚠</div><div style="color:#fca5a5">${isEl?'Dead neurons: αν z≤0 πάντα, ο νευρώνας πεθαίνει':'Dead neurons: if z≤0 always, the neuron dies'}</div></div>
+      </div>
+    </div>
+
+    <div class="math-card" style="border:1px solid #10b98133">
+      <div style="color:#10b981;font-size:13px;font-weight:900;margin-bottom:8px">GELU — ${isEl?'Η Σύγχρονη Λύση':'The Modern Solution'}</div>
+      <div class="formula" style="border-left-color:#10b981">
+        GELU(x) = x · Φ(x)<br>
+        <span style="color:var(--muted);font-size:9px">Φ = ${isEl?'αθροιστική κανονική κατανομή':'cumulative normal distribution'}</span>
+      </div>
+      <div class="cbox">
+        <div style="color:var(--sub);font-size:10px">${isEl?'Ομαλή σαν Sigmoid + γρήγορη σαν ReLU + χωρίς dead neurons. Χρησιμοποιείται σε GPT, BERT, Claude.':'Smooth like Sigmoid + fast like ReLU + no dead neurons. Used in GPT, BERT, Claude.'}</div>
+      </div>
+    </div>
+
+    <div class="math-card" style="border:1px solid #1e2d45">
+      <div style="color:var(--text);font-size:13px;font-weight:900;margin-bottom:8px">${isEl?'Συγκριτικός Πίνακας':'Comparison Table'}</div>
+      <table>
+        <thead><tr><th>Activation</th><th>${isEl?'Μέγ. Παράγ.':'Max Deriv.'}</th><th>Vanishing?</th><th>${isEl?'Dead Neurons?':'Dead Neurons?'}</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#00d4ff">Sigmoid</td><td>0.25</td><td style="color:#ef4444">${isEl?'❌ Ναι':'❌ Yes'}</td><td style="color:#10b981">${isEl?'✅ Όχι':'✅ No'}</td></tr>
+          <tr><td style="color:#f59e0b">Tanh</td><td>1.0</td><td style="color:#f59e0b">${isEl?'⚠ Σε βάθος':'⚠ At depth'}</td><td style="color:#10b981">${isEl?'✅ Όχι':'✅ No'}</td></tr>
+          <tr><td style="color:#ff6b35">ReLU</td><td>1.0</td><td style="color:#10b981">${isEl?'✅ Όχι':'✅ No'}</td><td style="color:#ef4444">${isEl?'❌ Ναι':'❌ Yes'}</td></tr>
+          <tr><td style="color:#10b981">GELU</td><td>~1.0</td><td style="color:#10b981">${isEl?'✅ Όχι':'✅ No'}</td><td style="color:#10b981">${isEl?'✅ Όχι':'✅ No'}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ── TIMELINE ──
+function renderTimeline(){
+  document.getElementById('timeline').innerHTML=T[lang].timeline.map(item=>`
+    <div class="timeline-item">
+      <div class="timeline-year">${item.y}</div>
+      <div class="timeline-body">${item.el}</div>
+    </div>`).join('');
+}
+
+// ── PHILOSOPHY ──
+function renderPhil(){
+  const isEl=lang==='el';
+  const phils=[
+    {hex:'#00d4ff',icon:'∞',titleEl:'Ζήνων ο Ελεάτης → Sigmoid',titleEn:'Zeno of Elea → Sigmoid',
+     quoteEl:'"Το βέλος δεν φτάνει ποτέ — διαιρείται επ\' άπειρον"',quoteEn:'"The arrow never arrives — infinitely divided"',
+     textEl:'Όπως το παράδοξο του Ζήνωνα όπου η κίνηση διαιρείται σε άπειρα μικρότερα βήματα μέχρι να μηδενιστεί, έτσι και το gradient της Sigmoid διαιρείται σε κάθε layer μέχρι να εξαφανιστεί. Το σήμα δεν φτάνει ποτέ στον προορισμό του.',
+     textEn:'Like Zeno\'s paradox where motion divides into infinite smaller steps until it vanishes, the Sigmoid gradient divides at each layer until it disappears. The signal never reaches its destination.'},
+    {hex:'#ff6b35',icon:'⚡',titleEl:'Ηράκλειτος → ReLU',titleEn:'Heraclitus → ReLU',
+     quoteEl:'"Τα πάντα ρει — η ροή δεν σταματά"',quoteEn:'"Everything flows — the flow never stops"',
+     textEl:'Ο Ηράκλειτος είδε την πραγματικότητα ως αδιάκοπη ροή. Η ReLU κρατά το gradient να ρέει αναλλοίωτο μέσα από εκατό layers — η πληροφορία δεν χάνεται, συνεχίζει να ρέει. Αλλά όπως κάθε ροή μπορεί να στερέψει, έτσι κάποιοι νευρώνες "πεθαίνουν".',
+     textEn:'Heraclitus saw reality as ceaseless flow. ReLU keeps the gradient flowing unchanged through a hundred layers — information is not lost, it keeps flowing. But as any flow can run dry, some neurons "die".'},
+    {hex:'#10b981',icon:'☯',titleEl:'Αριστοτέλης → GELU',titleEn:'Aristotle → GELU',
+     quoteEl:'"Η αρετή βρίσκεται στο μέσον" — μεσότης',quoteEn:'"Virtue lies in the mean" — the golden mean',
+     textEl:'Ο Αριστοτέλης δίδαξε ότι η τελειότητα βρίσκεται στην ισορροπία των άκρων. Το GELU είναι ακριβώς αυτό: ούτε η απότομη γωνία της ReLU, ούτε η υπερβολική ομαλότητα της Sigmoid — αλλά η χρυσή μεσότητα. Γι\' αυτό κυριαρχεί στους Transformers.',
+     textEn:'Aristotle taught that perfection lies in the balance of extremes. GELU is exactly this: neither ReLU\'s sharp corner nor Sigmoid\'s excessive smoothness — but the golden mean. This is why it dominates Transformers.'},
+  ];
+  document.getElementById('phil-container').innerHTML=`
+    <div class="panel" style="border-color:#7c3aed33">
+      <div class="plbl" style="color:#a78bfa">${isEl?'Η ΦΙΛΟΣΟΦΙΚΗ ΑΝΑΓΝΩΣΗ':'THE PHILOSOPHICAL READING'}</div>
+      <p style="color:var(--sub);font-size:12px;line-height:1.8">${isEl?'Το πρόβλημα του vanishing gradient έχει μια εκπληκτική αντιστοιχία με αρχαία ελληνικά παράδοξα για την κίνηση, τη ροή και την ισορροπία.':'The vanishing gradient problem has a striking correspondence to ancient Greek paradoxes about motion, flow, and balance.'}</p>
+    </div>
+    ${phils.map(p=>`
+      <div class="pcrd" style="border:1px solid ${p.hex}33">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+          <div class="pico" style="background:${p.hex}18;color:${p.hex}">${p.icon}</div>
+          <div style="color:${p.hex};font-size:12px;font-weight:900">${isEl?p.titleEl:p.titleEn}</div>
+        </div>
+        <div class="pquote" style="border-left:3px solid ${p.hex}">${isEl?p.quoteEl:p.quoteEn}</div>
+        <div style="color:var(--sub);font-size:11px;line-height:1.7">${isEl?p.textEl:p.textEn}</div>
+      </div>`).join('')}
+  `;
+}
+
+function setTab(id){
+  ['demo','curves','math','story','phil'].forEach(t=>{
+    document.getElementById('content-'+t).classList.toggle('active',t===id);
+    document.getElementById('tab-'+t).classList.toggle('active',t===id);
+  });
+  if(id==='curves')setTimeout(drawCurves,50);
+}
+
+// INIT
+renderMath();renderTimeline();renderPhil();update();
+window.addEventListener('resize',()=>{if(document.getElementById('content-curves').classList.contains('active'))drawCurves();});
+</script>
+</body>
+</html>
