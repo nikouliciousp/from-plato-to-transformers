@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Linear vs ReLU vs Sigmoid | Activation Functions</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#07090f;--panel:#111827;--border:#1e2d45;
+  --accent:#00d4ff;--accent2:#ff6b35;--accent3:#7c3aed;
+  --green:#10b981;--red:#ef4444;--yellow:#f59e0b;
+  --text:#e2e8f0;--muted:#475569;--sub:#94a3b8;--hi:#0a0e1a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;padding:14px;max-width:720px;margin:0 auto}
+.lang-bar{display:flex;justify-content:flex-end;gap:6px;margin-bottom:14px}
+.lang-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.lang-btn.active{border-color:var(--accent);background:#00d4ff18;color:var(--accent)}
+.hdr{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-sup{font-size:10px;letter-spacing:5px;color:var(--accent3);margin-bottom:5px}
+.hdr-title{font-size:20px;font-weight:900;line-height:1.3;margin-bottom:4px}
+.hdr-sub{color:var(--muted);font-size:11px}
+.tabs{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;margin-bottom:12px}
+.tab-btn{flex:1;padding:8px 4px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--border);color:var(--text)}
+.tab-content{display:none}.tab-content.active{display:block}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+.plbl{font-size:9px;letter-spacing:3px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.cbox{background:var(--hi);border-radius:7px;padding:8px 12px;margin-bottom:7px;font-size:11px;line-height:1.7}
+.cbox-title{font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.note-box{background:#00d4ff08;border:1px solid #00d4ff33;border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:10px;color:var(--sub);line-height:1.7}
+.note-box strong{color:var(--accent)}
+.guide{background:#7c3aed11;border:1px solid #7c3aed44;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--sub)}
+.guide strong{color:var(--text)}
+.guide-step{display:flex;gap:8px;align-items:flex-start;margin-bottom:5px}
+.guide-num{background:#7c3aed;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px}
+.ctrl-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.cbtn{padding:7px 13px;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.cbtn:active{transform:scale(.97)}
+.dsbtn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:10px;cursor:pointer;transition:all .2s}
+.dsbtn.active{border-color:var(--accent3);background:#7c3aed18;color:#a78bfa}
+.status-bar{background:var(--hi);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--sub);min-height:32px;line-height:1.6;border-left:3px solid var(--accent3)}
+.net-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+@media(max-width:500px){.net-strip{grid-template-columns:1fr}}
+.nc{background:var(--panel);border:2px solid var(--border);border-radius:10px;padding:10px;transition:border-color .3s,box-shadow .3s}
+.nc.winner{box-shadow:0 0 20px 3px var(--wc,#10b981);border-color:var(--wc,#10b981)!important}
+.nc-name{font-size:10px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:5px}
+.nc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nc-sub{color:var(--muted);font-size:9px;margin-bottom:5px;font-style:italic;line-height:1.4}
+.nc-metrics{display:flex;gap:5px}
+.nc-metric{flex:1;text-align:center;background:var(--hi);border-radius:6px;padding:5px 3px}
+.nc-mlbl{font-size:8px;color:var(--muted);letter-spacing:1px}
+.nc-mval{font-size:14px;font-weight:900;margin-top:1px}
+.viz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+@media(max-width:500px){.viz-grid{grid-template-columns:1fr}}
+.bcard{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.blbl{font-size:9px;padding:4px 8px;text-align:center;letter-spacing:1px;font-weight:700}
+canvas{display:block;width:100%!important}
+.loss-wrap{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+#loss-chart{width:100%!important;display:block;height:160px}
+.loss-legend{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap}
+.ll-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--sub)}
+.winner-box{border:1px solid #f59e0b44;border-radius:12px;padding:10px;margin-top:8px;background:var(--panel)}
+.math-card{background:var(--panel);border-radius:12px;padding:12px;margin-bottom:10px}
+.mrow{display:flex;gap:7px;margin-bottom:7px}
+@media(max-width:500px){.mrow{flex-direction:column}}
+.mpro{flex:1;background:#10b98111;border-radius:6px;padding:6px 8px;font-size:10px}
+.mcon{flex:1;background:#ef444411;border-radius:6px;padding:6px 8px;font-size:10px}
+.formula{background:var(--hi);border-radius:8px;padding:10px 14px;margin:6px 0;border-left:3px solid var(--accent3);font-size:12px;line-height:2;overflow-x:auto}
+.formula .v1{color:var(--accent);font-weight:700}
+.formula .v2{color:var(--accent2);font-weight:700}
+.formula .v3{color:var(--green);font-weight:700}
+.formula .op{color:var(--muted)}
+.formula .cm{font-size:9px;color:var(--muted);font-style:italic;display:block;margin-top:2px}
+.pcrd{background:var(--panel);border-radius:12px;padding:12px;margin-bottom:9px}
+.pico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.pquote{border-radius:6px;padding:6px 9px;margin-bottom:7px;font-size:11px;font-style:italic;color:var(--sub)}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-top:7px}
+th{padding:5px 7px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:5px 7px;border-bottom:1px solid var(--hi)}
+.footer{text-align:center;padding:14px 0 6px;color:var(--muted);font-size:10px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('el')" id="btn-el">🇬🇷 ΕΛ</button>
+  <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 EN</button>
+</div>
+
+<div class="hdr">
+  <div class="hdr-sup" id="h-sup">ΝΕΥΡΩΝΙΚΑ ΔΙΚΤΥΑ — ACTIVATION FUNCTIONS</div>
+  <div class="hdr-title">
+    <span style="color:var(--accent)" id="h-lin">Γραμμικό</span>
+    <span style="color:var(--muted)"> vs </span>
+    <span style="color:var(--accent2)" id="h-rel">ReLU</span>
+    <span style="color:var(--muted)"> vs </span>
+    <span style="color:var(--green)" id="h-sig">Sigmoid</span>
+  </div>
+  <div class="hdr-sub" id="h-sub">Γιατί τα νευρωνικά δίκτυα χρειάζονται μη-γραμμικότητα — και ποια activation function είναι καλύτερη</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('experiment')" id="tab-exp">🔬 <span id="t1">Πείραμα</span></button>
+  <button class="tab-btn" onclick="setTab('math')" id="tab-math">📐 <span id="t2">Μαθηματικά</span></button>
+  <button class="tab-btn" onclick="setTab('philosophy')" id="tab-phil">🏛 <span id="t3">Φιλοσοφία</span></button>
+</div>
+
+<!-- ═══ EXPERIMENT ═══ -->
+<div class="tab-content active" id="content-experiment">
+
+  <!-- Scientific note -->
+  <div class="note-box" id="note-box">
+    <strong>📌 Επιστημονική Σημείωση (Ablation Study):</strong> Και τα τρία δίκτυα έχουν <strong>ίδια αρχιτεκτονική</strong> (1 hidden layer, 6 νευρώνες) και <strong>Sigmoid στο output layer</strong> για binary classification. Αλλάζει <strong>μόνο</strong> η activation function του hidden layer — έτσι βλέπουμε ακριβώς τη διαφορά που κάνει η κάθε activation.
+  </div>
+
+  <div class="guide">
+    <div class="guide-step"><div class="guide-num">1</div><div id="g1">Επίλεξε <strong>dataset</strong> — δοκίμασε Circle ή Spiral για να δεις το ReLU να κερδίζει καθαρά</div></div>
+    <div class="guide-step"><div class="guide-num">2</div><div id="g2">Πάτα <strong>AUTO</strong> — παρακολούθα πώς τα τρία δίκτυα εκπαιδεύονται ταυτόχρονα</div></div>
+    <div class="guide-step"><div class="guide-num">3</div><div id="g3">Δες τα <strong>Decision Boundaries</strong> — γραμμικό = ευθεία, ReLU = γρήγορη καμπύλη, Sigmoid = αργή καμπύλη</div></div>
+    <div class="guide-step"><div class="guide-num">4</div><div id="g4">Παρατήρησε ότι το <strong>Sigmoid</strong> μαθαίνει πιο αργά λόγω vanishing gradient στο hidden layer</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="plbl" id="ds-label" style="color:var(--muted)">DATASET</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="dsbtn active" onclick="setDS('circle')" id="ds-circle">Circle</button>
+      <button class="dsbtn" onclick="setDS('xor')" id="ds-xor">XOR</button>
+      <button class="dsbtn" onclick="setDS('spiral')" id="ds-spiral">Spiral ✨</button>
+      <button class="dsbtn" onclick="setDS('linear')" id="ds-linear">Linear</button>
+    </div>
+    <div style="margin-top:7px;font-size:10px;color:var(--muted)" id="ds-desc">Circle: σημεία εντός κύκλου → κλάση 1. Απαιτεί καμπυλότητα — αδύνατο για γραμμικό δίκτυο.</div>
+  </div>
+
+  <div class="ctrl-row">
+    <button class="cbtn" style="border:1px solid var(--accent);background:#00d4ff11;color:var(--accent)" onclick="doStep()">▶ 1</button>
+    <button class="cbtn" style="border:1px solid var(--accent2);background:#ff6b3511;color:var(--accent2)" onclick="doN(20)">+20</button>
+    <button class="cbtn" style="border:1px solid var(--yellow);background:#f59e0b11;color:var(--yellow)" onclick="doN(100)">+100</button>
+    <button class="cbtn" id="btn-auto" style="border:1px solid var(--green);background:#10b98111;color:var(--green)" onclick="toggleAuto()">▶▶ AUTO</button>
+    <button class="cbtn" style="border:1px solid var(--muted);background:transparent;color:var(--muted)" onclick="resetAll()">↺</button>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+      <span style="color:var(--muted);font-size:10px" id="epoch-lbl">Epoch:</span>
+      <span style="color:var(--text);font-size:16px;font-weight:900" id="epoch-val">0</span>
+    </div>
+  </div>
+
+  <div class="status-bar" id="status-bar">Πάτα AUTO για να ξεκινήσει η εκπαίδευση.</div>
+
+  <div class="net-strip" id="net-strip"></div>
+
+  <div class="plbl" id="boundary-lbl" style="color:var(--muted);margin-bottom:6px">DECISION BOUNDARIES — LIVE</div>
+  <div class="viz-grid">
+    <div class="bcard" style="border-color:#00d4ff33"><div class="blbl" style="color:#00d4ff" id="bl-lin">ΓΡΑΜΜΙΚΟ</div><canvas id="cv-0" height="160"></canvas></div>
+    <div class="bcard" style="border-color:#ff6b3533"><div class="blbl" style="color:#ff6b35" id="bl-rel">ReLU</div><canvas id="cv-1" height="160"></canvas></div>
+    <div class="bcard" style="border-color:#10b98133"><div class="blbl" style="color:#10b981" id="bl-sig">SIGMOID</div><canvas id="cv-2" height="160"></canvas></div>
+  </div>
+  <div style="font-size:9px;color:var(--muted);text-align:center;margin-bottom:10px" id="boundary-hint">🔵 κλάση 1 &nbsp;|&nbsp; 🟠 κλάση 0 &nbsp;|&nbsp; χρώμα background = πρόβλεψη δικτύου</div>
+
+  <div class="loss-wrap" id="loss-wrap" style="display:none">
+    <div class="plbl" id="loss-lbl" style="color:var(--muted)">ΚΑΜΠΥΛΗ LOSS — χαμηλότερο = καλύτερα</div>
+    <canvas id="loss-chart"></canvas>
+    <div class="loss-legend" id="loss-legend"></div>
+  </div>
+
+  <div class="winner-box" id="winner-box" style="display:none">
+    <div class="plbl" style="color:var(--yellow)">🏆 <span id="winner-lbl">ΑΠΟΤΕΛΕΣΜΑ</span></div>
+    <div id="winner-text" style="font-size:12px;line-height:1.7"></div>
+  </div>
+</div>
+
+<!-- ═══ MATH ═══ -->
+<div class="tab-content" id="content-math">
+
+  <div class="note-box" id="note-math">
+    <strong>📌 Κοινό σε όλα τα δίκτυα:</strong> Output layer = <strong>σ(z)</strong> — Sigmoid για binary classification (έξοδος 0-1). Η σύγκριση αφορά <strong>μόνο</strong> την activation function του hidden layer.
+  </div>
+
+  <!-- LINEAR -->
+  <div class="math-card" style="border:1px solid #00d4ff33">
+    <div style="color:var(--accent);font-size:13px;font-weight:900;margin-bottom:8px" id="m-lin-title">Γραμμικό Hidden Layer</div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7;margin-bottom:8px" id="m-lin-desc">Χωρίς activation, οσαδήποτε layers κι αν βάλεις, το αποτέλεσμα είναι πάντα ευθεία. Τρία layers = ένα layer.</div>
+    <div class="formula">
+      <span class="v1">z¹</span> <span class="op">= W¹·x + b¹</span>
+      <span class="cm">// hidden — καμία activation, απλός γραμμικός μετασχηματισμός</span>
+      <br>
+      <span class="v1">ŷ</span> <span class="op">= σ(W²·z¹ + b²)</span>
+      <span class="cm">// output — Sigmoid για 0-1 (κοινό και στα 3 δίκτυα)</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-title" id="m-why-lin">Γιατί αποτυγχάνει</div>
+      <div style="color:var(--text)">W₂·(W₁·x) = W_eff·x &nbsp;→&nbsp; πάντα γραμμικό, ανεξαρτήτως βάθους</div>
+    </div>
+    <div class="mrow">
+      <div class="mpro"><div style="color:var(--green);font-weight:700;margin-bottom:2px" id="m-lp">✅ Πλεονέκτημα</div><div style="color:#a7f3d0" id="m-la">Γρήγορο, σταθερό gradient</div></div>
+      <div class="mcon"><div style="color:var(--red);font-weight:700;margin-bottom:2px" id="m-lc">⚠ Μειονέκτημα</div><div style="color:#fca5a5" id="m-ld">Μόνο ευθείες — αδύνατο για XOR, κύκλο, σπείρα</div></div>
+    </div>
+  </div>
+
+  <!-- RELU -->
+  <div class="math-card" style="border:1px solid #ff6b3533">
+    <div style="color:var(--accent2);font-size:13px;font-weight:900;margin-bottom:8px" id="m-rel-title">ReLU Hidden Layer</div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7;margin-bottom:8px" id="m-rel-desc">Απλό cut στο μηδέν. Η ασυνέχεια της παραγώγου στο 0 δημιουργεί "γωνίες" που φτιάχνουν καμπύλες.</div>
+    <div class="formula" style="border-left-color:var(--accent2)">
+      <span class="v2">a¹</span> <span class="op">= ReLU(W¹·x + b¹) = max(0, W¹·x + b¹)</span>
+      <span class="cm">// hidden — παράγωγος = 1 αν z&gt;0, αλλιώς 0</span>
+      <br>
+      <span class="v2">ŷ</span> <span class="op">= σ(W²·a¹ + b²)</span>
+      <span class="cm">// output — Sigmoid (κοινό)</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-title" id="m-relu-deriv">Παράγωγος — Backprop</div>
+      <div style="color:var(--yellow)">ReLU'(z) = 1 αν z &gt; 0 &nbsp;|&nbsp; 0 αν z ≤ 0</div>
+      <div style="color:var(--sub);font-size:10px;margin-top:3px" id="m-relu-note">Η παράγωγος είναι ασυνεχής στο z=0 — "γωνία". Πλεονέκτημα: δεν εξαφανίζεται. Μειονέκτημα: dead neurons αν z≤0 πάντα.</div>
+    </div>
+    <div class="mrow">
+      <div class="mpro"><div style="color:var(--green);font-weight:700;margin-bottom:2px" id="m-rp">✅ Πλεονέκτημα</div><div style="color:#a7f3d0" id="m-ra">Γρήγορο, δεν εξαφανίζεται gradient, μη-γραμμικό</div></div>
+      <div class="mcon"><div style="color:var(--red);font-weight:700;margin-bottom:2px" id="m-rc">⚠ Μειονέκτημα</div><div style="color:#fca5a5" id="m-rd">Ασυνεχής παράγωγος στο 0, dead neurons</div></div>
+    </div>
+  </div>
+
+  <!-- SIGMOID HIDDEN -->
+  <div class="math-card" style="border:1px solid #10b98133">
+    <div style="color:var(--green);font-size:13px;font-weight:900;margin-bottom:8px" id="m-sig-title">Sigmoid Hidden Layer</div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7;margin-bottom:8px" id="m-sig-desc">Ομαλή S-καμπύλη, παντού παραγωγίσιμη. Διατηρεί τη συνέχεια. Αλλά η παράγωγός της → 0 για μεγάλο |z|.</div>
+    <div class="formula" style="border-left-color:var(--green)">
+      <span class="v3">a¹</span> <span class="op">= σ(W¹·x + b¹) = 1 / (1 + e^(−z¹))</span>
+      <span class="cm">// hidden — παντού λεία, παράγωγος = σ(z)·(1−σ(z))</span>
+      <br>
+      <span class="v3">ŷ</span> <span class="op">= σ(W²·a¹ + b²)</span>
+      <span class="cm">// output — Sigmoid (κοινό)</span>
+    </div>
+    <div class="cbox">
+      <div class="cbox-title" id="m-sig-deriv">Παράγωγος — Vanishing Gradient</div>
+      <div style="color:var(--yellow)">σ'(z) = σ(z)·(1−σ(z)) &nbsp;→&nbsp; max = 0.25 στο z=0</div>
+      <div style="color:var(--yellow)">σ'(z) → 0 όταν |z| → ∞</div>
+      <div style="color:var(--sub);font-size:10px;margin-top:3px" id="m-sig-note">Παντού συνεχής και λεία — αλλά η παράγωγος μικραίνει γρήγορα. Σε βαθιά δίκτυα τα πρώτα layers "παγώνουν".</div>
+    </div>
+    <div class="mrow">
+      <div class="mpro"><div style="color:var(--green);font-weight:700;margin-bottom:2px" id="m-sp">✅ Πλεονέκτημα</div><div style="color:#a7f3d0" id="m-sa">Παντού λεία, συνεχής παράγωγος, μη-γραμμική</div></div>
+      <div class="mcon"><div style="color:var(--red);font-weight:700;margin-bottom:2px" id="m-sc">⚠ Μειονέκτημα</div><div style="color:#fca5a5" id="m-sd">Vanishing gradient — μαθαίνει πολύ αργά σε hidden layers</div></div>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="math-card" style="border:1px solid #7c3aed33">
+    <div style="color:#a78bfa;font-size:13px;font-weight:900;margin-bottom:8px" id="m-cmp-title">Σύγκριση — Τι Κάνει κάθε Activation</div>
+    <div class="cbox">
+      <div class="cbox-title" id="m-cmp-sub">Ιδιότητες Hidden Layer Activation</div>
+      <table>
+        <thead>
+          <tr><th id="th1">Activation</th><th id="th2">Μη-γραμμική</th><th id="th3">Συνεχής παράγ.</th><th id="th4">Vanishing Grad.</th><th id="th5">Χρήση σήμερα</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="color:var(--accent)">Καμία</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅ Όχι</td><td style="color:var(--sub)" id="td15">Output μόνο</td></tr>
+          <tr><td style="color:var(--accent2)">ReLU</td><td style="color:var(--green)">✅</td><td style="color:var(--red)">❌ Γωνία</td><td style="color:var(--green)">✅ Όχι</td><td style="color:var(--sub)" id="td25">CNN, MLP</td></tr>
+          <tr><td style="color:var(--green)">Sigmoid</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--red)">❌ Ναι</td><td style="color:var(--sub)" id="td35">Output μόνο</td></tr>
+          <tr><td style="color:var(--yellow)">GELU</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅ Σχεδόν</td><td style="color:var(--sub)" id="td45">Transformers</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cbox">
+      <div class="cbox-title" id="m-gelu-title">GELU — Το Καλύτερο και των Δύο</div>
+      <div style="color:var(--yellow)">GELU(x) = x · Φ(x)</div>
+      <div style="color:var(--sub);font-size:10px;margin-top:3px" id="m-gelu-desc">Ομαλή όπως η Sigmoid + γρήγορη όπως η ReLU. Χρησιμοποιείται στους Transformers (GPT, BERT, Claude). Η επόμενη εξέλιξη.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PHILOSOPHY ═══ -->
+<div class="tab-content" id="content-philosophy">
+  <div class="panel" style="border-color:#7c3aed33">
+    <div class="plbl" style="color:var(--accent3)" id="ph-ml">Η ΦΙΛΟΣΟΦΙΚΗ ΑΝΤΙΣΤΟΙΧΙΑ</div>
+    <p style="color:var(--sub);font-size:12px;line-height:1.8" id="ph-mt">Τρεις αρχαίοι Έλληνες φιλόσοφοι είχαν ήδη περιγράψει τρεις διαφορετικές θεωρίες για τη φύση της πραγματικότητας. Κάθε μία αντιστοιχεί σε μία activation function.</p>
+  </div>
+
+  <!-- Parmenides = Linear -->
+  <div class="pcrd" style="border:1px solid #00d4ff33">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+      <div class="pico" style="background:#00d4ff18">—</div>
+      <div style="color:var(--accent);font-size:12px;font-weight:900" id="ph1t">Παρμενίδης → Γραμμικό</div>
+    </div>
+    <div class="pquote" style="border-left:3px solid var(--accent)" id="ph1q">"Το ον είναι και δεν μπορεί να μη είναι" — ένας αμετάβλητος, στατικός κόσμος</div>
+    <div class="cbox"><div class="cbox-title" id="ph-mll">ML ΑΝΤΙΣΤΟΙΧΙΑ</div><div style="color:var(--accent)">z = Wx + b &nbsp;→&nbsp; μόνο ευθείες, αμετάβλητη γραμμικότητα</div></div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7" id="ph1x">Ο Παρμενίδης έβλεπε έναν κόσμο χωρίς αλλαγή. Το γραμμικό δίκτυο κάνει το ίδιο — βλέπει μόνο γραμμικές σχέσεις, ανεξαρτήτως βάθους.</div>
+  </div>
+
+  <!-- Heraclitus = ReLU -->
+  <div class="pcrd" style="border:1px solid #ff6b3533">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+      <div class="pico" style="background:#ff6b3518">∿</div>
+      <div style="color:var(--accent2);font-size:12px;font-weight:900" id="ph2t">Ηράκλειτος → ReLU</div>
+    </div>
+    <div class="pquote" style="border-left:3px solid var(--accent2)" id="ph2q">"Τα πάντα ρει, ουδέν μένει" — απότομη αλλαγή, γωνίες, ρήξη</div>
+    <div class="cbox"><div class="cbox-title" id="ph-ml2">ML ΑΝΤΙΣΤΟΙΧΙΑ</div><div style="color:var(--accent2)">ReLU(x) = max(0,x) &nbsp;→&nbsp; απότομη γωνία στο 0, ασυνεχής παράγωγος</div></div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7" id="ph2x">Ο Ηράκλειτος πίστευε στην απότομη αλλαγή — τα πάντα ρέουν, τίποτα δεν μένει σταθερό. Η ReLU ενσαρκώνει αυτό: απότομο cut στο 0, ασυνεχής παράγωγος. Γρήγορη, αποτελεσματική, αλλά "σκληρή".</div>
+  </div>
+
+  <!-- Aristotle = Sigmoid -->
+  <div class="pcrd" style="border:1px solid #10b98133">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+      <div class="pico" style="background:#10b98118">∫</div>
+      <div style="color:var(--green);font-size:12px;font-weight:900" id="ph3t">Αριστοτέλης → Sigmoid</div>
+    </div>
+    <div class="pquote" style="border-left:3px solid var(--green)" id="ph3q">"Η φύση δεν κάνει άλματα" — ομαλές μεταβάσεις, συνέχεια, σταδιακή αλλαγή</div>
+    <div class="cbox"><div class="cbox-title" id="ph-ml3">ML ΑΝΤΙΣΤΟΙΧΙΑ</div><div style="color:var(--green)">σ(x) = 1/(1+e⁻ˣ) &nbsp;→&nbsp; παντού λεία, συνεχής παράγωγος</div></div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7" id="ph3x">Ο Αριστοτέλης πίστευε ότι η φύση κινείται ομαλά, χωρίς άλματα. Η Sigmoid είναι ακριβώς αυτό — παντού λεία, συνεχής παράγωγος. Αλλά η ομαλότητα έχει κόστος: vanishing gradient.</div>
+  </div>
+
+  <!-- Leibniz = GELU -->
+  <div class="pcrd" style="border:1px solid #7c3aed33">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+      <div class="pico" style="background:#7c3aed18">⊕</div>
+      <div style="color:#a78bfa;font-size:12px;font-weight:900" id="ph4t">Leibniz → GELU (η επόμενη εξέλιξη)</div>
+    </div>
+    <div class="pquote" style="border-left:3px solid #7c3aed" id="ph4q">"Ο κόσμος είναι το καλύτερο δυνατό σύνολο αντιθέτων σε αρμονία"</div>
+    <div class="cbox"><div class="cbox-title">ML ΑΝΤΙΣΤΟΙΧΙΑ</div><div style="color:#a78bfa">GELU(x) = x·Φ(x) &nbsp;→&nbsp; ομαλή ReLU — Transformers</div></div>
+    <div style="color:var(--sub);font-size:11px;line-height:1.7" id="ph4x">Ο Leibniz ήθελε την αρμονία των αντιθέτων. Το GELU το πετυχαίνει: ομαλό όπως η Sigmoid + αποτελεσματικό όπως η ReLU. Αυτό χρησιμοποιούν σήμερα GPT, BERT, Claude.</div>
+  </div>
+
+  <!-- Summary table -->
+  <div class="panel">
+    <div class="plbl" style="color:var(--muted)" id="ph-tbl">ΣΥΝΟΨΗ</div>
+    <table>
+      <thead><tr><th id="pth1">Φιλόσοφος</th><th id="pth2">Ιδέα</th><th id="pth3">Activation</th><th id="pth4">Ιδιότητα</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent)" id="ptd11">Παρμενίδης</td><td style="color:var(--sub)" id="ptd12">Στατικός κόσμος</td><td style="color:var(--accent)">Καμία</td><td style="color:var(--sub)" id="ptd14">Γραμμικό, συνεχές</td></tr>
+        <tr><td style="color:var(--accent2)" id="ptd21">Ηράκλειτος</td><td style="color:var(--sub)" id="ptd22">Τα πάντα ρει</td><td style="color:var(--accent2)">ReLU</td><td style="color:var(--sub)" id="ptd24">Μη-γραμμικό, ασυνεχές</td></tr>
+        <tr><td style="color:var(--green)" id="ptd31">Αριστοτέλης</td><td style="color:var(--sub)" id="ptd32">Φύση χωρίς άλματα</td><td style="color:var(--green)">Sigmoid</td><td style="color:var(--sub)" id="ptd34">Μη-γραμμικό, συνεχές</td></tr>
+        <tr><td style="color:#a78bfa" id="ptd41">Leibniz</td><td style="color:var(--sub)" id="ptd42">Αρμονία αντιθέτων</td><td style="color:#a78bfa">GELU</td><td style="color:var(--sub)" id="ptd44">Ομαλό + γρήγορο</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel" style="border-color:#f59e0b44">
+    <div class="plbl" style="color:var(--yellow)" id="ph-conn">ΣΥΝΔΕΣΗ ΜΕ ΤΟ POST 1</div>
+    <p style="color:var(--sub);font-size:12px;line-height:1.8" id="ph-ct">Στο Post 1 είδαμε ότι η <strong style="color:var(--accent2)">διαίρεση</strong> (Πλάτωνας / Divisive Neuron) δίνει μη-γραμμικότητα χωρίς activation function. Εδώ βλέπουμε ότι η <strong style="color:var(--accent2)">ReLU</strong> και η <strong style="color:var(--green)">Sigmoid</strong> δίνουν μη-γραμμικότητα μέσω της activation. Ίδιο πρόβλημα — τρεις διαφορετικές λύσεις.</p>
+    <div style="background:#f59e0b11;border-radius:7px;padding:9px;font-size:11px;color:#fcd34d;line-height:1.7" id="ph-tip">💡 Οι σύγχρονοι Transformers χρησιμοποιούν <strong>GELU</strong> — η τελική απάντηση στο ερώτημα "ReLU ή Sigmoid;" είναι "ούτε το ένα ούτε το άλλο — GELU που παίρνει το καλύτερο και των δύο".</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div id="footer-txt">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+  <div style="margin-top:3px;color:#334155" id="footer-link">nikouliciousp.github.io/relu_experiment/ &nbsp;|&nbsp; Post 2/5: From Plato to Transformers</div>
+</div>
+
+<script>
+// ── TRANSLATIONS ──
+const T={
+  el:{
+    "h-sup":"ΝΕΥΡΩΝΙΚΑ ΔΙΚΤΥΑ — ACTIVATION FUNCTIONS",
+    "h-lin":"Γραμμικό","h-rel":"ReLU","h-sig":"Sigmoid",
+    "h-sub":"Γιατί τα νευρωνικά δίκτυα χρειάζονται μη-γραμμικότητα — και ποια activation function είναι καλύτερη",
+    "t1":"Πείραμα","t2":"Μαθηματικά","t3":"Φιλοσοφία",
+    "note-box":`<strong>📌 Επιστημονική Σημείωση (Ablation Study):</strong> Και τα τρία δίκτυα έχουν <strong>ίδια αρχιτεκτονική</strong> (1 hidden layer, 6 νευρώνες) και <strong>Sigmoid στο output layer</strong> για binary classification. Αλλάζει <strong>μόνο</strong> η activation function του hidden layer — έτσι βλέπουμε ακριβώς τη διαφορά.`,
+    "note-math":`<strong>📌 Κοινό σε όλα τα δίκτυα:</strong> Output layer = <strong>σ(z)</strong> — Sigmoid για binary classification. Η σύγκριση αφορά <strong>μόνο</strong> την activation function του hidden layer.`,
+    "g1":`Επίλεξε <strong>dataset</strong> — δοκίμασε Circle ή Spiral`,
+    "g2":`Πάτα <strong>AUTO</strong> — παρακολούθα τα τρία δίκτυα ταυτόχρονα`,
+    "g3":`Δες τα <strong>Decision Boundaries</strong> — γραμμικό=ευθεία, ReLU=γρήγορη καμπύλη, Sigmoid=αργή καμπύλη`,
+    "g4":`Παρατήρησε ότι το <strong>Sigmoid hidden</strong> μαθαίνει πιο αργά λόγω vanishing gradient`,
+    "ds-label":"DATASET","ds-circle":"Circle","ds-xor":"XOR","ds-spiral":"Spiral ✨","ds-linear":"Linear",
+    "epoch-lbl":"Epoch:","loss-lbl":"ΚΑΜΠΥΛΗ LOSS — χαμηλότερο = καλύτερα",
+    "winner-lbl":"ΑΠΟΤΕΛΕΣΜΑ","boundary-lbl":"DECISION BOUNDARIES — LIVE",
+    "boundary-hint":"🔵 κλάση 1 | 🟠 κλάση 0 | χρώμα background = πρόβλεψη δικτύου",
+    "bl-lin":"ΓΡΑΜΜΙΚΟ","bl-rel":"ReLU","bl-sig":"SIGMOID",
+    "btn-auto-start":"▶▶ AUTO","btn-auto-stop":"⏹ STOP",
+    "LOSS":"LOSS","ACC":"ACC%",
+    "dsDesc":{
+      circle:"Circle: σημεία εντός κύκλου → κλάση 1. Αδύνατο για γραμμικό — χρειάζεται καμπυλότητα.",
+      xor:"XOR: ίδιο πρόσημο → κλάση 1. Κλασικό μη-γραμμικό πρόβλημα (Minsky & Papert, 1969).",
+      spiral:"Spiral: δύο σπείρες. Το πιο δύσκολο — χρειάζεται πολλαπλές μη-γραμμικές τομές.",
+      linear:"Linear: x₁+x₂ > 0 → κλάση 1. Γραμμικά διαχωρίσιμο — και τα τρία δίκτυα λύνουν το πρόβλημα.",
+    },
+    "statusIdle":"Πάτα AUTO. Κάθε <strong>epoch</strong> = μία πλήρης διέλευση όλων των δεδομένων και ενημέρωση βαρών.",
+    "statusRun":(e,l,r,s)=>`<strong>Epoch ${e}</strong> — Γραμμικό: ${l} | ReLU: ${r} | Sigmoid: ${s} ⟵ χαμηλότερο = καλύτερα`,
+    "wfn":(n,nc,l,a,ds,why)=>`<span style="color:${nc};font-weight:900;font-size:13px">${n}</span> κερδίζει! &nbsp; Loss: <span style="color:#10b981;font-weight:700">${l}</span> &nbsp; Accuracy: <span style="color:#00d4ff;font-weight:700">${a}%</span><div style="color:#475569;font-size:10px;margin-top:4px">${why}</div>`,
+    "whyMap":{
+      circle:{lin:"Γραμμικό: αδύνατο να φτιάξει κυκλικό όριο.",relu:"ReLU: γρήγορες γωνίες → κυκλικό όριο.",sig:"Sigmoid: αργή λόγω vanishing gradient στο hidden layer."},
+      xor:{lin:"Γραμμικό: κλασική αποτυχία.",relu:"ReLU: λύνει XOR με γωνιακές τομές.",sig:"Sigmoid: λύνει αλλά πιο αργά."},
+      spiral:{lin:"Γραμμικό: εντελώς αδύνατο.",relu:"ReLU: καταφέρνει να τυλιχτεί γύρω από τη σπείρα.",sig:"Sigmoid: παλεύει — vanishing gradient επιβραδύνει."},
+      linear:{lin:"Γραμμικό: ευθεία αρκεί — λύνει άνετα.",relu:"ReLU: υπερβολικό για γραμμικό πρόβλημα.",sig:"Sigmoid: επίσης λύνει — εδώ και τα τρία είναι ισάξια."},
+    },
+    "netSubs":["Χωρίς activation — μόνο ευθείες","ReLU hidden, Sigmoid output","Sigmoid hidden + output"],
+    "m-lin-title":"Γραμμικό Hidden Layer","m-rel-title":"ReLU Hidden Layer","m-sig-title":"Sigmoid Hidden Layer",
+    "m-lin-desc":"Χωρίς activation, οσαδήποτε layers κι αν βάλεις, το αποτέλεσμα είναι πάντα ευθεία.",
+    "m-rel-desc":"Απλό cut στο μηδέν. Ασυνεχής παράγωγος που δημιουργεί γωνίες — πολλές γωνίες = οποιαδήποτε καμπύλη.",
+    "m-sig-desc":"Ομαλή S-καμπύλη, παντού παραγωγίσιμη. Αλλά η παράγωγός της → 0 για μεγάλο |z|.",
+    "m-why-lin":"Γιατί αποτυγχάνει","m-relu-deriv":"Παράγωγος — Backprop","m-sig-deriv":"Παράγωγος — Vanishing Gradient",
+    "m-relu-note":"Η παράγωγος είναι ασυνεχής στο z=0 — \"γωνία\". Πλεονέκτημα: δεν εξαφανίζεται. Μειονέκτημα: dead neurons.",
+    "m-sig-note":"Παντού συνεχής — αλλά γίνεται σχεδόν μηδέν για μεγάλα |z|. Σε βαθιά δίκτυα τα πρώτα layers παγώνουν.",
+    "m-lp":"✅ Πλεονέκτημα","m-lc":"⚠ Μειονέκτημα","m-la":"Γρήγορο, σταθερό gradient","m-ld":"Μόνο ευθείες — αδύνατο για μη-γραμμικά",
+    "m-rp":"✅ Πλεονέκτημα","m-rc":"⚠ Μειονέκτημα","m-ra":"Γρήγορο, δεν εξαφανίζεται gradient","m-rd":"Ασυνεχής παράγωγος στο 0, dead neurons",
+    "m-sp":"✅ Πλεονέκτημα","m-sc":"⚠ Μειονέκτημα","m-sa":"Παντού λεία, συνεχής παράγωγος","m-sd":"Vanishing gradient — αργή εκπαίδευση σε hidden layers",
+    "m-cmp-title":"Σύγκριση — Τι Κάνει κάθε Activation","m-cmp-sub":"Ιδιότητες Hidden Layer Activation",
+    "m-gelu-title":"GELU — Το Καλύτερο και των Δύο","m-gelu-desc":"Ομαλή όπως η Sigmoid + γρήγορη όπως η ReLU. Χρησιμοποιείται στους Transformers (GPT, BERT, Claude).",
+    "th1":"Activation","th2":"Μη-γραμμική","th3":"Συνεχής παράγ.","th4":"Vanishing Grad.","th5":"Χρήση σήμερα",
+    "td15":"Output μόνο","td25":"CNN, MLP","td35":"Output μόνο","td45":"Transformers",
+    "ph-ml":"Η ΦΙΛΟΣΟΦΙΚΗ ΑΝΤΙΣΤΟΙΧΙΑ",
+    "ph-mt":"Τρεις αρχαίοι Έλληνες φιλόσοφοι είχαν ήδη περιγράψει τρεις διαφορετικές θεωρίες για τη φύση της πραγματικότητας. Κάθε μία αντιστοιχεί σε μία activation function.",
+    "ph1t":"Παρμενίδης → Γραμμικό","ph1q":'"Το ον είναι και δεν μπορεί να μη είναι" — αμετάβλητος, στατικός κόσμος',
+    "ph-mll":"ML ΑΝΤΙΣΤΟΙΧΙΑ","ph-ml2":"ML ΑΝΤΙΣΤΟΙΧΙΑ","ph-ml3":"ML ΑΝΤΙΣΤΟΙΧΙΑ",
+    "ph1x":"Ο Παρμενίδης έβλεπε έναν κόσμο χωρίς αλλαγή. Το γραμμικό δίκτυο κάνει το ίδιο.",
+    "ph2t":"Ηράκλειτος → ReLU","ph2q":'"Τα πάντα ρει, ουδέν μένει" — απότομη αλλαγή, γωνίες, ρήξη',
+    "ph2x":"Ο Ηράκλειτος πίστευε στην απότομη αλλαγή. Η ReLU: απότομο cut στο 0, ασυνεχής παράγωγος. Γρήγορη αλλά σκληρή.",
+    "ph3t":"Αριστοτέλης → Sigmoid","ph3q":'"Η φύση δεν κάνει άλματα" — ομαλές μεταβάσεις, συνέχεια',
+    "ph3x":"Ο Αριστοτέλης πίστευε σε ομαλές μεταβάσεις. Η Sigmoid: παντού λεία, αλλά vanishing gradient.",
+    "ph4t":"Leibniz → GELU (η επόμενη εξέλιξη)","ph4q":'"Ο κόσμος είναι η αρμονία των αντιθέτων"',
+    "ph4x":"Το GELU παίρνει το καλύτερο και των δύο: ομαλό όπως Sigmoid + γρήγορο όπως ReLU. GPT, BERT, Claude.",
+    "ph-tbl":"ΣΥΝΟΨΗ","ph-conn":"ΣΥΝΔΕΣΗ ΜΕ ΤΟ POST 1",
+    "pth1":"Φιλόσοφος","pth2":"Ιδέα","pth3":"Activation","pth4":"Ιδιότητα",
+    "ptd11":"Παρμενίδης","ptd12":"Στατικός κόσμος","ptd14":"Γραμμικό, συνεχές",
+    "ptd21":"Ηράκλειτος","ptd22":"Τα πάντα ρει","ptd24":"Μη-γραμμικό, ασυνεχές",
+    "ptd31":"Αριστοτέλης","ptd32":"Φύση χωρίς άλματα","ptd34":"Μη-γραμμικό, συνεχές",
+    "ptd41":"Leibniz","ptd42":"Αρμονία αντιθέτων","ptd44":"Ομαλό + γρήγορο",
+    "ph-ct":`Στο Post 1 η <strong style="color:var(--accent2)">διαίρεση</strong> (Πλάτωνας) έδινε μη-γραμμικότητα χωρίς activation. Εδώ βλέπουμε ότι <strong style="color:var(--accent2)">ReLU</strong> και <strong style="color:var(--green)">Sigmoid</strong> δίνουν μη-γραμμικότητα μέσω activation. Ίδιο πρόβλημα — τρεις λύσεις.`,
+    "ph-tip":`💡 Οι σύγχρονοι Transformers χρησιμοποιούν <strong>GELU</strong> — η τελική απάντηση: ούτε ReLU ούτε Sigmoid, αλλά η αρμονία τους.`,
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "footer-link":"nikouliciousp.github.io/relu_experiment/ | Post 2/5: From Plato to Transformers",
+  },
+  en:{
+    "h-sup":"NEURAL NETWORKS — ACTIVATION FUNCTIONS",
+    "h-lin":"Linear","h-rel":"ReLU","h-sig":"Sigmoid",
+    "h-sub":"Why neural networks need non-linearity — and which activation function is better",
+    "t1":"Experiment","t2":"Mathematics","t3":"Philosophy",
+    "note-box":`<strong>📌 Scientific Note (Ablation Study):</strong> All three networks share the <strong>same architecture</strong> (1 hidden layer, 6 neurons) and use <strong>Sigmoid at the output layer</strong> for binary classification. Only the <strong>hidden layer activation</strong> changes — so we see exactly what each activation contributes.`,
+    "note-math":`<strong>📌 Common to all networks:</strong> Output layer = <strong>σ(z)</strong> — Sigmoid for binary classification (output 0-1). The comparison is exclusively about the hidden layer activation function.`,
+    "g1":`Choose a <strong>dataset</strong> — try Circle or Spiral`,
+    "g2":`Press <strong>AUTO</strong> — watch all three networks train simultaneously`,
+    "g3":`Watch <strong>Decision Boundaries</strong> — linear=straight, ReLU=fast curve, Sigmoid=slow curve`,
+    "g4":`Notice that <strong>Sigmoid hidden</strong> learns slower due to vanishing gradient`,
+    "ds-label":"DATASET","ds-circle":"Circle","ds-xor":"XOR","ds-spiral":"Spiral ✨","ds-linear":"Linear",
+    "epoch-lbl":"Epoch:","loss-lbl":"LOSS CURVE — lower = better",
+    "winner-lbl":"RESULT","boundary-lbl":"DECISION BOUNDARIES — LIVE",
+    "boundary-hint":"🔵 class 1 | 🟠 class 0 | background colour = network prediction",
+    "bl-lin":"LINEAR","bl-rel":"ReLU","bl-sig":"SIGMOID",
+    "btn-auto-start":"▶▶ AUTO","btn-auto-stop":"⏹ STOP",
+    "LOSS":"LOSS","ACC":"ACC%",
+    "dsDesc":{
+      circle:"Circle: points inside circle → class 1. Impossible for linear — requires curvature.",
+      xor:"XOR: same sign → class 1. Classic non-linear problem (Minsky & Papert, 1969).",
+      spiral:"Spiral: two interleaved spirals. Hardest — requires multiple non-linear cuts.",
+      linear:"Linear: x₁+x₂ > 0 → class 1. Linearly separable — all three networks solve it.",
+    },
+    "statusIdle":"Press AUTO. Each <strong>epoch</strong> = one full pass of all data and weight update.",
+    "statusRun":(e,l,r,s)=>`<strong>Epoch ${e}</strong> — Linear: ${l} | ReLU: ${r} | Sigmoid: ${s} ⟵ lower = better`,
+    "wfn":(n,nc,l,a,ds,why)=>`<span style="color:${nc};font-weight:900;font-size:13px">${n}</span> wins! &nbsp; Loss: <span style="color:#10b981;font-weight:700">${l}</span> &nbsp; Accuracy: <span style="color:#00d4ff;font-weight:700">${a}%</span><div style="color:#475569;font-size:10px;margin-top:4px">${why}</div>`,
+    "whyMap":{
+      circle:{lin:"Linear: cannot form a circular boundary.",relu:"ReLU: fast corners → circular boundary.",sig:"Sigmoid: slower due to vanishing gradient in hidden layer."},
+      xor:{lin:"Linear: classic failure.",relu:"ReLU: solves XOR with angular cuts.",sig:"Sigmoid: solves it but slower."},
+      spiral:{lin:"Linear: completely impossible.",relu:"ReLU: manages to wrap around the spiral.",sig:"Sigmoid: struggles — vanishing gradient slows training."},
+      linear:{lin:"Linear: a straight line suffices.",relu:"ReLU: overkill for a linear problem.",sig:"Sigmoid: also solves it — all three are equal here."},
+    },
+    "netSubs":["No activation — straight lines only","ReLU hidden, Sigmoid output","Sigmoid hidden + output"],
+    "m-lin-title":"Linear Hidden Layer","m-rel-title":"ReLU Hidden Layer","m-sig-title":"Sigmoid Hidden Layer",
+    "m-lin-desc":"Without activation, however many layers you stack, the result is always a straight line.",
+    "m-rel-desc":"Simple cut at zero. Discontinuous derivative creates corners — many corners = any curve.",
+    "m-sig-desc":"Smooth S-curve, differentiable everywhere. But its derivative → 0 for large |z|.",
+    "m-why-lin":"Why it fails","m-relu-deriv":"Derivative — Backprop","m-sig-deriv":"Derivative — Vanishing Gradient",
+    "m-relu-note":"Derivative is discontinuous at z=0 — a corner. Advantage: doesn't vanish. Disadvantage: dead neurons.",
+    "m-sig-note":"Smooth everywhere — but becomes nearly zero for large |z|. In deep networks, early layers freeze.",
+    "m-lp":"✅ Advantage","m-lc":"⚠ Disadvantage","m-la":"Fast, stable gradient","m-ld":"Only straight lines — impossible for non-linear data",
+    "m-rp":"✅ Advantage","m-rc":"⚠ Disadvantage","m-ra":"Fast, no vanishing gradient, non-linear","m-rd":"Discontinuous derivative, dead neurons",
+    "m-sp":"✅ Advantage","m-sc":"⚠ Disadvantage","m-sa":"Smooth everywhere, continuous derivative","m-sd":"Vanishing gradient — slow training in hidden layers",
+    "m-cmp-title":"Comparison — What Each Activation Does","m-cmp-sub":"Hidden Layer Activation Properties",
+    "m-gelu-title":"GELU — Best of Both Worlds","m-gelu-desc":"Smooth like Sigmoid + fast like ReLU. Used in Transformers (GPT, BERT, Claude).",
+    "th1":"Activation","th2":"Non-linear","th3":"Cont. deriv.","th4":"Vanishing Grad.","th5":"Used today",
+    "td15":"Output only","td25":"CNN, MLP","td35":"Output only","td45":"Transformers",
+    "ph-ml":"THE PHILOSOPHICAL CORRESPONDENCE",
+    "ph-mt":"Three ancient Greek philosophers had already described three different theories of reality. Each corresponds to an activation function.",
+    "ph1t":"Parmenides → Linear","ph1q":'"Being is and cannot not be" — unchanging, static world',
+    "ph-mll":"ML CORRESPONDENCE","ph-ml2":"ML CORRESPONDENCE","ph-ml3":"ML CORRESPONDENCE",
+    "ph1x":"Parmenides saw a world without change. The linear network does the same.",
+    "ph2t":"Heraclitus → ReLU","ph2q":'"Everything flows, nothing stands still" — abrupt change, corners, rupture',
+    "ph2x":"Heraclitus believed in abrupt change. ReLU: sharp cut at zero, discontinuous derivative. Fast but harsh.",
+    "ph3t":"Aristotle → Sigmoid","ph3q":'"Nature makes no leaps" — smooth transitions, continuity',
+    "ph3x":"Aristotle believed in smooth transitions. Sigmoid: smooth everywhere — but vanishing gradient.",
+    "ph4t":"Leibniz → GELU (the next step)","ph4q":'"The world is the harmony of opposites"',
+    "ph4x":"GELU takes the best of both: smooth like Sigmoid + fast like ReLU. GPT, BERT, Claude.",
+    "ph-tbl":"SUMMARY","ph-conn":"CONNECTION TO POST 1",
+    "pth1":"Philosopher","pth2":"Idea","pth3":"Activation","pth4":"Property",
+    "ptd11":"Parmenides","ptd12":"Static world","ptd14":"Linear, continuous",
+    "ptd21":"Heraclitus","ptd22":"Everything flows","ptd24":"Non-linear, discontinuous",
+    "ptd31":"Aristotle","ptd32":"Nature makes no leaps","ptd34":"Non-linear, continuous",
+    "ptd41":"Leibniz","ptd42":"Harmony of opposites","ptd44":"Smooth + fast",
+    "ph-ct":`In Post 1, <strong style="color:var(--accent2)">division</strong> (Plato / Divisive Neuron) gave non-linearity without activation. Here we see that <strong style="color:var(--accent2)">ReLU</strong> and <strong style="color:var(--green)">Sigmoid</strong> give non-linearity through activation. Same problem — three solutions.`,
+    "ph-tip":`💡 Modern Transformers use <strong>GELU</strong> — the final answer: neither ReLU nor Sigmoid alone, but their harmony.`,
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "footer-link":"nikouliciousp.github.io/relu_experiment/ | Post 2/5: From Plato to Transformers",
+  }
+};
+
+let lang='el';
+function setLang(l){
+  lang=l;
+  document.getElementById('btn-el').classList.toggle('active',l==='el');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  const t=T[l];
+  for(const[id,v]of Object.entries(t)){
+    if(typeof v==='string'){const el=document.getElementById(id);if(el)el.innerHTML=v;}
+  }
+  nets.forEach((n,i)=>{n.sub=t.netSubs[i];n.name=t[['h-lin','h-rel','h-sig'][i]]||n.name;});
+  updateDsDesc();renderStrip();updateWinner();
+}
+
+// ── MATH ──
+const sig=x=>1/(1+Math.exp(-Math.max(-50,Math.min(50,x))));
+const dsig=y=>y*(1-y);
+const rl=x=>Math.max(0,x);
+const rld=x=>x>0?1:0;
+const mse=(p,t)=>p.reduce((s,v,i)=>s+(v-t[i])**2,0)/p.length;
+const calcAcc=(p,t)=>Math.round(p.filter((v,i)=>(v>.5?1:0)===t[i]).length/p.length*100);
+
+// ── DATASETS ──
+const rn=()=>(Math.random()-.5)*1.8;
+function genCircle(){return Array.from({length:80},()=>{const a=Math.random()*6.28,r=Math.random()<.5?Math.random()*.44:.64+Math.random()*.28;return{x:[r*Math.cos(a),r*Math.sin(a)],y:r<.55?1:0};});}
+function genXOR(){return Array.from({length:80},()=>{const x=rn(),y=rn();return{x:[x,y],y:x*y>0?1:0};});}
+function genSpiral(){const d=[];for(let c=0;c<2;c++)for(let i=0;i<40;i++){const t=i/40*3.8+c*Math.PI,r=.08+i/40*.88;d.push({x:[r*Math.cos(t),r*Math.sin(t)],y:c});}return d;}
+function genLinear(){return Array.from({length:80},()=>{const x=rn(),y=rn();return{x:[x,y],y:x+y>0?1:0};});}
+
+// ── LINEAR NET ──
+class LinNet{
+  constructor(){
+    this.w=[(Math.random()-.5)*.5,(Math.random()-.5)*.5];
+    this.b=0;this.L=[];
+    this.name=T[lang]['h-lin'];this.color='#00d4ff';
+    this.sub=T[lang].netSubs[0];
+  }
+  p(x){return sig(x[0]*this.w[0]+x[1]*this.w[1]+this.b);}
+  train(data,lr=0.5){
+    let d0=0,d1=0,db=0;
+    for(const{x,y}of data){const o=this.p(x),d=(o-y)*dsig(o);d0+=d*x[0];d1+=d*x[1];db+=d;}
+    const n=data.length;
+    this.w[0]-=lr*d0/n;this.w[1]-=lr*d1/n;this.b-=lr*db/n;
+    this.L.push(mse(data.map(d=>this.p(d.x)),data.map(d=>d.y)));
+  }
+}
+
+// ── RELU NET — 6 hidden, proper analytical backprop ──
+class ReLUNet{
+  constructor(){
+    const h=6;this.h=h;
+    this.W1=Array.from({length:h},()=>[(Math.random()-.5)*.8,(Math.random()-.5)*.8]);
+    this.b1=new Array(h).fill(0);
+    this.W2=Array.from({length:h},()=>(Math.random()-.5)*.8);
+    this.b2=0;this.L=[];
+    this.name='ReLU';this.color='#ff6b35';
+    this.sub=T[lang].netSubs[1];
+  }
+  fwd(x){
+    const z1=this.W1.map((w,i)=>w[0]*x[0]+w[1]*x[1]+this.b1[i]);
+    const a1=z1.map(rl);
+    const z2=this.W2.reduce((s,w,j)=>s+w*a1[j],this.b2);
+    return{z1,a1,z2,out:sig(z2)};
+  }
+  p(x){return this.fwd(x).out;}
+  train(data,lr=0.35){
+    const h=this.h;
+    const dW1=Array.from({length:h},()=>[0,0]);
+    const db1=new Array(h).fill(0);
+    const dW2=new Array(h).fill(0);
+    let db2=0;
+    for(const{x,y}of data){
+      const{z1,a1,z2,out}=this.fwd(x);
+      const d2=(out-y)*dsig(out);
+      db2+=d2;
+      for(let j=0;j<h;j++){
+        dW2[j]+=d2*a1[j];
+        const d1=d2*this.W2[j]*rld(z1[j]);
+        db1[j]+=d1;dW1[j][0]+=d1*x[0];dW1[j][1]+=d1*x[1];
+      }
+    }
+    const n=data.length;
+    for(let j=0;j<h;j++){
+      this.W2[j]-=lr*dW2[j]/n;this.b1[j]-=lr*db1[j]/n;
+      this.W1[j][0]-=lr*dW1[j][0]/n;this.W1[j][1]-=lr*dW1[j][1]/n;
+    }
+    this.b2-=lr*db2/n;
+    this.L.push(mse(data.map(d=>this.p(d.x)),data.map(d=>d.y)));
+  }
+}
+
+// ── SIGMOID HIDDEN NET — same arch, sigmoid in hidden ──
+class SigNet{
+  constructor(){
+    const h=6;this.h=h;
+    this.W1=Array.from({length:h},()=>[(Math.random()-.5)*.8,(Math.random()-.5)*.8]);
+    this.b1=new Array(h).fill(0);
+    this.W2=Array.from({length:h},()=>(Math.random()-.5)*.8);
+    this.b2=0;this.L=[];
+    this.name='Sigmoid';this.color='#10b981';
+    this.sub=T[lang].netSubs[2];
+  }
+  fwd(x){
+    // Sigmoid in hidden — same arch as ReLU, only activation differs
+    const z1=this.W1.map((w,i)=>w[0]*x[0]+w[1]*x[1]+this.b1[i]);
+    const a1=z1.map(sig);       // <-- Sigmoid instead of ReLU
+    const z2=this.W2.reduce((s,w,j)=>s+w*a1[j],this.b2);
+    return{z1,a1,z2,out:sig(z2)};
+  }
+  p(x){return this.fwd(x).out;}
+  train(data,lr=0.35){
+    // Analytical backprop with sigmoid derivative in hidden
+    const h=this.h;
+    const dW1=Array.from({length:h},()=>[0,0]);
+    const db1=new Array(h).fill(0);
+    const dW2=new Array(h).fill(0);
+    let db2=0;
+    for(const{x,y}of data){
+      const{z1,a1,z2,out}=this.fwd(x);
+      const d2=(out-y)*dsig(out);
+      db2+=d2;
+      for(let j=0;j<h;j++){
+        dW2[j]+=d2*a1[j];
+        // sigmoid derivative: σ'(z) = σ(z)·(1−σ(z)) = a1[j]·(1−a1[j])
+        const d1=d2*this.W2[j]*dsig(a1[j]);
+        db1[j]+=d1;dW1[j][0]+=d1*x[0];dW1[j][1]+=d1*x[1];
+      }
+    }
+    const n=data.length;
+    for(let j=0;j<h;j++){
+      this.W2[j]-=lr*dW2[j]/n;this.b1[j]-=lr*db1[j]/n;
+      this.W1[j][0]-=lr*dW1[j][0]/n;this.W1[j][1]-=lr*dW1[j][1]/n;
+    }
+    this.b2-=lr*db2/n;
+    this.L.push(mse(data.map(d=>this.p(d.x)),data.map(d=>d.y)));
+  }
+}
+
+// ── STATE ──
+let ds='circle',data=genCircle(),nets=[new LinNet(),new ReLUNet(),new SigNet()],epoch=0,timer=null;
+
+function updateDsDesc(){
+  const el=document.getElementById('ds-desc');if(el)el.textContent=T[lang].dsDesc[ds];
+}
+function setDS(d){
+  ds=d;
+  data=d==='circle'?genCircle():d==='xor'?genXOR():d==='spiral'?genSpiral():genLinear();
+  ['circle','xor','spiral','linear'].forEach(k=>document.getElementById('ds-'+k).classList.toggle('active',k===d));
+  updateDsDesc();resetAll();
+}
+
+// ── DRAW BOUNDARY ──
+const RES=20;
+function drawBound(idx){
+  const cv=document.getElementById('cv-'+idx);if(!cv)return;
+  const W=cv.offsetWidth||220,H=cv.height;cv.width=W;
+  const ctx=cv.getContext('2d'),cw=W/RES,ch=H/RES,net=nets[idx];
+  for(let r=0;r<RES;r++)for(let c=0;c<RES;c++){
+    const x1=(c/RES)*2-1,x2=(r/RES)*2-1,pv=net.p([x1,x2]);
+    ctx.fillStyle=`rgba(${Math.round((1-pv)*170)},${Math.round(pv*55)},${Math.round(pv*195)},0.68)`;
+    ctx.fillRect(Math.floor(c*cw),Math.floor(r*ch),Math.ceil(cw)+1,Math.ceil(ch)+1);
+  }
+  data.forEach(({x,y})=>{
+    const cx=((x[0]+1)/2)*W,cy=((x[1]+1)/2)*H;
+    ctx.beginPath();ctx.arc(cx,cy,3.5,0,6.28);
+    ctx.fillStyle=y===1?'#00d4ff':'#ff6b35';
+    ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=1.3;
+    ctx.fill();ctx.stroke();
+  });
+}
+
+// ── RENDER STRIP ──
+function renderStrip(){
+  const t=T[lang];
+  document.getElementById('net-strip').innerHTML=nets.map((net,i)=>{
+    const lv=net.L.length?net.L[net.L.length-1]:null;
+    const preds=data.map(d=>net.p(d.x)),tgts=data.map(d=>d.y);
+    const av=lv!==null?calcAcc(preds,tgts):null;
+    const lc=lv===null?'var(--muted)':lv<.12?'#10b981':lv<.22?'#f59e0b':'#ef4444';
+    const ac=av===null?'var(--muted)':av>=80?'#10b981':av>=65?'#f59e0b':'#ef4444';
+    const losses=nets.map(n=>n.L.length?n.L[n.L.length-1]:99);
+    const isW=epoch>=8&&lv!==null&&lv===Math.min(...losses);
+    return `<div class="nc${isW?' winner':''}" style="border-color:${net.color}44;${isW?`--wc:${net.color}`:''}">
+      <div class="nc-name"><div class="nc-dot" style="background:${net.color}"></div><span style="color:${net.color}">${net.name}${isW?' 🏆':''}</span></div>
+      <div class="nc-sub">${net.sub}</div>
+      <div class="nc-metrics">
+        <div class="nc-metric"><div class="nc-mlbl">${t.LOSS}</div><div class="nc-mval" style="color:${lc}">${lv!==null?lv.toFixed(3):'—'}</div></div>
+        <div class="nc-metric"><div class="nc-mlbl">${t.ACC}</div><div class="nc-mval" style="color:${ac}">${av!==null?av+'%':'—'}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DRAW LOSS ──
+function drawLoss(){
+  const cv=document.getElementById('loss-chart');if(!cv)return;
+  cv.width=cv.offsetWidth||640;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const all=nets.flatMap(n=>n.L);if(all.length<2)return;
+  const maxL=Math.max(...all,.3);
+  const pad=36,rw=W-pad-10,rh=H-16;
+  const toX=(i,len)=>pad+i/Math.max(len-1,1)*rw;
+  const toY=v=>4+(1-v/maxL)*rh;
+  [.05,.1,.15,.2,.25,.3].forEach(v=>{
+    if(v>maxL*1.05)return;
+    const y=toY(v);
+    ctx.strokeStyle='#1e2d4555';ctx.lineWidth=.5;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-4,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#47556988';ctx.font='9px IBM Plex Mono,monospace';
+    ctx.fillText(v.toFixed(2),2,y+3);
+  });
+  nets.forEach(net=>{
+    if(net.L.length<2)return;
+    ctx.strokeStyle=net.color;ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.setLineDash([]);
+    ctx.beginPath();
+    net.L.forEach((l,i)=>i===0?ctx.moveTo(toX(i,net.L.length),toY(l)):ctx.lineTo(toX(i,net.L.length),toY(l)));
+    ctx.stroke();
+    const li=net.L.length-1,lx=toX(li,net.L.length),ly=toY(net.L[li]);
+    ctx.fillStyle=net.color;ctx.beginPath();ctx.arc(lx,ly,4,0,6.28);ctx.fill();
+    ctx.font='bold 9px IBM Plex Mono,monospace';ctx.fillStyle=net.color;
+    ctx.fillText(net.L[li].toFixed(3),Math.min(lx+6,W-42),Math.max(ly-3,10));
+  });
+  document.getElementById('loss-legend').innerHTML=nets.map(n=>`<div class="ll-item"><div style="width:16px;height:2px;background:${n.color}"></div><span style="color:${n.color}">${n.name}</span></div>`).join('');
+}
+
+// ── STATUS & WINNER ──
+function updateStatus(){
+  const sb=document.getElementById('status-bar'),t=T[lang];if(!sb)return;
+  if(epoch===0){sb.innerHTML=t.statusIdle;return;}
+  const fmt=n=>n.L.length?n.L[n.L.length-1].toFixed(3):'—';
+  sb.innerHTML=t.statusRun(epoch,fmt(nets[0]),fmt(nets[1]),fmt(nets[2]));
+}
+function updateWinner(){
+  const box=document.getElementById('winner-box');
+  if(epoch<8){box.style.display='none';return;}
+  const ls=nets.map(n=>n.L.length?n.L[n.L.length-1]:99);
+  const bi=ls.indexOf(Math.min(...ls));
+  const b=nets[bi];
+  const ba=calcAcc(data.map(d=>b.p(d.x)),data.map(d=>d.y));
+  const wm=T[lang].whyMap[ds];
+  const why=Object.values(wm).join(' &nbsp;·&nbsp; ');
+  box.style.display='block';
+  document.getElementById('winner-text').innerHTML=T[lang].wfn(b.name,b.color,ls[bi].toFixed(4),ba,ds,why);
+}
+
+// ── TRAIN ──
+function trainBatch(n){for(let i=0;i<n;i++){nets.forEach(net=>net.train(data));epoch++;}}
+function render(skipBound){
+  document.getElementById('epoch-val').textContent=epoch;
+  renderStrip();updateStatus();
+  document.getElementById('loss-wrap').style.display='block';
+  drawLoss();
+  if(!skipBound)nets.forEach((_,i)=>drawBound(i));
+  updateWinner();
+}
+function doStep(){trainBatch(1);render(false);}
+function doN(n){trainBatch(n);render(false);}
+function toggleAuto(){
+  const btn=document.getElementById('btn-auto'),t=T[lang];
+  if(timer){
+    clearInterval(timer);timer=null;
+    btn.textContent=t['btn-auto-start'];
+    btn.style.cssText='border:1px solid var(--green);background:#10b98111;color:var(--green)';
+    render(false);
+  }else{
+    let tick=0;
+    timer=setInterval(()=>{trainBatch(2);tick++;render(tick%3!==0);},150);
+    btn.textContent=t['btn-auto-stop'];
+    btn.style.cssText='border:1px solid var(--red);background:#ef444411;color:var(--red)';
+  }
+}
+function resetAll(){
+  if(timer){clearInterval(timer);timer=null;
+    const btn=document.getElementById('btn-auto'),t=T[lang];
+    btn.textContent=t['btn-auto-start'];
+    btn.style.cssText='border:1px solid var(--green);background:#10b98111;color:var(--green)';}
+  nets=[new LinNet(),new ReLUNet(),new SigNet()];
+  epoch=0;
+  document.getElementById('epoch-val').textContent='0';
+  document.getElementById('loss-wrap').style.display='none';
+  document.getElementById('winner-box').style.display='none';
+  updateStatus();renderStrip();nets.forEach((_,i)=>drawBound(i));
+}
+function setTab(id){
+  ['experiment','math','philosophy'].forEach(t=>{
+    document.getElementById('content-'+t).classList.toggle('active',t===id);
+    document.getElementById('tab-'+t.replace('experiment','exp').replace('philosophy','phil')).classList.toggle('active',t===id);
+  });
+}
+
+// ── INIT ──
+updateDsDesc();renderStrip();nets.forEach((_,i)=>drawBound(i));
+window.addEventListener('resize',()=>{nets.forEach((_,i)=>drawBound(i));drawLoss();});
+</script>
+</body>
+</html>
