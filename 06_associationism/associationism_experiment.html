@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Οι 4 Νόμοι του Αριστοτέλη | Associationism → Machine Learning</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#07090f;--panel:#111827;--border:#1e2d45;
+  --c1:#00d4ff;--c2:#ff6b35;--c3:#7c3aed;--c4:#f59e0b;--c5:#10b981;
+  --red:#ef4444;--text:#e2e8f0;--muted:#475569;--sub:#94a3b8;--hi:#0a0e1a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;padding:14px;max-width:780px;margin:0 auto}
+.lang-bar{display:flex;justify-content:flex-end;gap:6px;margin-bottom:14px}
+.lang-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.lang-btn.active{border-color:var(--c1);background:#00d4ff18;color:var(--c1)}
+.hdr{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-sup{font-size:10px;letter-spacing:4px;color:var(--c3);margin-bottom:6px}
+.hdr-title{font-size:20px;font-weight:900;line-height:1.35;margin-bottom:5px}
+.hdr-sub{color:var(--muted);font-size:11px;line-height:1.6}
+.tabs{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:65px;padding:8px 3px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--border);color:var(--text)}
+.tab-content{display:none}.tab-content.active{display:block}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.plbl{font-size:9px;letter-spacing:3px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.cbox{background:var(--hi);border-radius:7px;padding:9px 12px;margin-bottom:7px;font-size:11px;line-height:1.7}
+.cbox-title{font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.intro-box{border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--sub)}
+.intro-box strong{color:var(--text)}
+.law-quote{font-style:italic;color:var(--sub);font-size:11px;line-height:1.7;border-left:3px solid var(--lc);padding:7px 11px;margin-bottom:10px;background:var(--hi);border-radius:0 6px 6px 0}
+.law-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.law-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;font-weight:700}
+.law-title{font-size:14px;font-weight:900}
+.law-map{font-size:10px;color:var(--muted);font-style:italic}
+input[type=range]{width:100%;accent-color:var(--lc,var(--c3));height:5px;cursor:pointer;margin:4px 0}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;font-size:10px;color:var(--muted)}
+.slider-head b{color:var(--text);font-size:15px}
+canvas{display:block;width:100%!important}
+.metric-strip{display:flex;gap:8px;margin-top:10px}
+.metric{flex:1;background:var(--hi);border-radius:8px;padding:8px;text-align:center}
+.metric-l{font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:3px}
+.metric-v{font-size:16px;font-weight:900}
+.insight{border-radius:8px;padding:10px 12px;margin-top:11px;font-size:11px;line-height:1.75}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px}
+th{padding:6px 7px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:7px;border-bottom:1px solid var(--hi);vertical-align:top}
+.pcrd{background:var(--panel);border-radius:12px;padding:13px;margin-bottom:9px}
+.src{font-size:9px;color:var(--muted);line-height:1.8;margin-top:8px}
+.footer{text-align:center;padding:16px 0 6px;color:var(--muted);font-size:10px;line-height:1.8}
+.word-chip{display:inline-block;padding:3px 9px;border-radius:14px;font-size:11px;margin:3px;border:1px solid var(--border);transition:all .3s}
+.example-box{background:var(--hi);border-radius:8px;padding:10px 13px;margin-top:11px;font-size:11px;line-height:1.75;color:var(--sub);border-left:3px solid var(--lc)}
+.example-box .ex-tag{font-size:8px;letter-spacing:2px;color:var(--lc);font-weight:700;display:block;margin-bottom:5px;text-transform:uppercase}
+.example-box b{color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('el')" id="btn-el">🇬🇷 ΕΛ</button>
+  <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 EN</button>
+</div>
+
+<div class="hdr">
+  <div class="hdr-sup" id="h-sup">ΟΙ 4 ΝΟΜΟΙ ΤΗΣ ΣΥΝΕΙΡΜΙΚΗΣ ΜΝΗΜΗΣ</div>
+  <div class="hdr-title" id="h-title">Ο Αριστοτέλης Περιέγραψε το<br><span style="color:var(--c2)">Machine Learning το 350 π.Χ.</span></div>
+  <div class="hdr-sub" id="h-sub">Τέσσερις νόμοι για το πώς μαθαίνει ο νους — και πώς έγιναν αλγόριθμοι</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('contiguity')" id="tab-contiguity">🔗 <span id="t1">Γειτνίαση</span></button>
+  <button class="tab-btn" onclick="setTab('frequency')" id="tab-frequency">🔁 <span id="t2">Συχνότητα</span></button>
+  <button class="tab-btn" onclick="setTab('similarity')" id="tab-similarity">🎯 <span id="t3">Ομοιότητα</span></button>
+  <button class="tab-btn" onclick="setTab('contrast')" id="tab-contrast">⚡ <span id="t4">Αντίθεση</span></button>
+  <button class="tab-btn" onclick="setTab('summary')" id="tab-summary">📜 <span id="t5">Σύνοψη</span></button>
+</div>
+
+<!-- CONTIGUITY -->
+<div class="tab-content active" id="content-contiguity">
+  <div class="intro-box" style="background:#00d4ff11;border:1px solid #00d4ff44">
+    <div class="law-head">
+      <div class="law-ico" style="background:#00d4ff22;color:#00d4ff">🔗</div>
+      <div><div class="law-title" style="color:#00d4ff" id="c1-title">Νόμος της Γειτνίασης</div><div class="law-map" id="c1-map">→ Κανόνας του Hebb</div></div>
+    </div>
+    <div class="law-quote" style="--lc:#00d4ff" id="c1-quote"></div>
+    <div id="c1-desc"></div>
+    <div class="example-box" style="--lc:#00d4ff" id="c1-example"></div>
+  </div>
+  <div class="panel" style="--lc:#00d4ff">
+    <div class="plbl" style="color:var(--muted)" id="c1-demo-lbl">ΔΥΟ ΝΕΥΡΩΝΕΣ — ΠΟΣΟ ΣΥΧΝΑ ΠΥΡΟΔΟΤΟΥΝ ΜΑΖΙ;</div>
+    <div class="slider-head"><span id="c1-slider-lbl">Συγχρονισμός πυροδότησης</span><b id="c1-val">50%</b></div>
+    <input type="range" id="c1-slider" min="0" max="100" value="50" oninput="updateContiguity()">
+    <canvas id="c1-canvas" height="150"></canvas>
+    <div class="metric-strip">
+      <div class="metric"><div class="metric-l" id="c1-m1">ΣΥΝΔΕΣΗ</div><div class="metric-v" id="c1-weight" style="color:#00d4ff">0.50</div></div>
+      <div class="metric"><div class="metric-l" id="c1-m2">ΚΑΤΑΣΤΑΣΗ</div><div class="metric-v" id="c1-status" style="font-size:11px;color:#00d4ff">—</div></div>
+    </div>
+    <div class="insight" id="c1-insight" style="background:#00d4ff11;border:1px solid #00d4ff33"></div>
+  </div>
+</div>
+
+<!-- FREQUENCY -->
+<div class="tab-content" id="content-frequency">
+  <div class="intro-box" style="background:#ff6b3511;border:1px solid #ff6b3544">
+    <div class="law-head">
+      <div class="law-ico" style="background:#ff6b3522;color:#ff6b35">🔁</div>
+      <div><div class="law-title" style="color:#ff6b35" id="c2-title">Νόμος της Συχνότητας</div><div class="law-map" id="c2-map">→ Weight Updates / Gradient Descent</div></div>
+    </div>
+    <div class="law-quote" style="--lc:#ff6b35" id="c2-quote"></div>
+    <div id="c2-desc"></div>
+    <div class="example-box" style="--lc:#ff6b35" id="c2-example"></div>
+  </div>
+  <div class="panel" style="--lc:#ff6b35">
+    <div class="plbl" style="color:var(--muted)" id="c2-demo-lbl">ΕΠΑΝΑΛΗΨΕΙΣ ΕΚΠΑΙΔΕΥΣΗΣ</div>
+    <div class="slider-head"><span id="c2-slider-lbl">Αριθμός επαναλήψεων</span><b id="c2-val">10</b></div>
+    <input type="range" id="c2-slider" min="0" max="100" value="10" oninput="updateFrequency()">
+    <canvas id="c2-canvas" height="150"></canvas>
+    <div class="metric-strip">
+      <div class="metric"><div class="metric-l" id="c2-m1">ΙΣΧΥΣ ΣΥΝΔΕΣΗΣ</div><div class="metric-v" id="c2-strength" style="color:#ff6b35">0.63</div></div>
+      <div class="metric"><div class="metric-l" id="c2-m2">ΣΦΑΛΜΑ</div><div class="metric-v" id="c2-error" style="color:#ff6b35">0.37</div></div>
+    </div>
+    <div class="insight" id="c2-insight" style="background:#ff6b3511;border:1px solid #ff6b3533"></div>
+  </div>
+</div>
+
+<!-- SIMILARITY -->
+<div class="tab-content" id="content-similarity">
+  <div class="intro-box" style="background:#10b98111;border:1px solid #10b98144">
+    <div class="law-head">
+      <div class="law-ico" style="background:#10b98122;color:#10b981">🎯</div>
+      <div><div class="law-title" style="color:#10b981" id="c3-title">Νόμος της Ομοιότητας</div><div class="law-map" id="c3-map">→ Embeddings / Cosine Similarity</div></div>
+    </div>
+    <div class="law-quote" style="--lc:#10b981" id="c3-quote"></div>
+    <div id="c3-desc"></div>
+    <div class="example-box" style="--lc:#10b981" id="c3-example"></div>
+  </div>
+  <div class="panel" style="--lc:#10b981">
+    <div class="plbl" style="color:var(--muted)" id="c3-demo-lbl">ΔΙΑΝΥΣΜΑΤΙΚΟΣ ΧΩΡΟΣ — ΚΟΝΤΙΝΑ = ΟΜΟΙΑ</div>
+    <div class="slider-head"><span id="c3-slider-lbl">Επίλεξε έννοια</span><b id="c3-val" style="font-size:12px">🍎 Μήλο</b></div>
+    <input type="range" id="c3-slider" min="0" max="4" value="0" step="1" oninput="updateSimilarity()">
+    <canvas id="c3-canvas" height="200"></canvas>
+    <div class="insight" id="c3-insight" style="background:#10b98111;border:1px solid #10b98133"></div>
+  </div>
+</div>
+
+<!-- CONTRAST -->
+<div class="tab-content" id="content-contrast">
+  <div class="intro-box" style="background:#7c3aed11;border:1px solid #7c3aed44">
+    <div class="law-head">
+      <div class="law-ico" style="background:#7c3aed22;color:#a78bfa">⚡</div>
+      <div><div class="law-title" style="color:#a78bfa" id="c4-title">Νόμος της Αντίθεσης</div><div class="law-map" id="c4-map">→ Contrastive Learning</div></div>
+    </div>
+    <div class="law-quote" style="--lc:#7c3aed" id="c4-quote"></div>
+    <div id="c4-desc"></div>
+    <div class="example-box" style="--lc:#7c3aed" id="c4-example"></div>
+  </div>
+  <div class="panel" style="--lc:#7c3aed">
+    <div class="plbl" style="color:var(--muted)" id="c4-demo-lbl">CONTRASTIVE LEARNING — ΤΡΑΒΑ ΟΜΟΙΑ, ΣΠΡΩΞΕ ΑΝΤΙΘΕΤΑ</div>
+    <div class="slider-head"><span id="c4-slider-lbl">Εκπαίδευση contrastive</span><b id="c4-val">0%</b></div>
+    <input type="range" id="c4-slider" min="0" max="100" value="0" oninput="updateContrast()">
+    <canvas id="c4-canvas" height="200"></canvas>
+    <div class="insight" id="c4-insight" style="background:#7c3aed11;border:1px solid #7c3aed33"></div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="tab-content" id="content-summary">
+  <div id="summary-container"></div>
+</div>
+
+<div class="footer">
+  <div id="footer-txt">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+  <div style="margin-top:3px;color:#334155">From Plato to Transformers</div>
+</div>
+<script>
+const T={
+  el:{
+    "h-sup":"ΟΙ 4 ΝΟΜΟΙ ΤΗΣ ΣΥΝΕΙΡΜΙΚΗΣ ΜΝΗΜΗΣ",
+    "h-title":`Ο Αριστοτέλης Περιέγραψε το<br><span style="color:var(--c2)">Machine Learning το 350 π.Χ.</span>`,
+    "h-sub":"Τέσσερις νόμοι για το πώς μαθαίνει ο νους — και πώς έγιναν αλγόριθμοι",
+    "t1":"Γειτνίαση","t2":"Συχνότητα","t3":"Ομοιότητα","t4":"Αντίθεση","t5":"Σύνοψη",
+    // Contiguity
+    "c1-title":"Νόμος της Γειτνίασης","c1-map":"→ Κανόνας του Hebb (1949)",
+    "c1-quote":"«Όταν δύο πράγματα συμβαίνουν κοντά στον χρόνο ή τον χώρο, ο νους τα συνδέει.» — Αριστοτέλης, Περὶ μνήμης",
+    "c1-desc":`Η ανάμνηση του ενός φέρνει την ανάμνηση του άλλου, όταν τα βιώσαμε <b>μαζί</b>. Ο κεραυνός φέρνει τη βροντή. 23 αιώνες αργότερα, ο Donald Hebb το διατύπωσε ως τον θεμελιώδη κανόνα της νευρωνικής μάθησης.`,
+    "c1-demo-lbl":"ΔΥΟ ΝΕΥΡΩΝΕΣ — ΠΟΣΟ ΣΥΧΝΑ ΠΥΡΟΔΟΤΟΥΝ ΜΑΖΙ;",
+    "c1-slider-lbl":"Συγχρονισμός πυροδότησης","c1-m1":"ΣΥΝΔΕΣΗ","c1-m2":"ΚΑΤΑΣΤΑΣΗ",
+    "c1-statusFn":v=>v<25?"ΑΣΘΕΝΗΣ":v<60?"ΣΧΗΜΑΤΙΖΕΤΑΙ":"ΙΣΧΥΡΗ",
+    "c1-insightFn":v=>`<b style="color:#00d4ff">"Neurons that fire together, wire together."</b><br>Στο ${v}% συγχρονισμό, το βάρος της σύνδεσης είναι <b>${(v/100).toFixed(2)}</b>. Όσο πιο συχνά οι δύο νευρώνες ενεργοποιούνται <b>ταυτόχρονα</b>, τόσο ισχυρότερη γίνεται η σύναψη μεταξύ τους — ακριβώς όπως ο Αριστοτέλης περιέγραψε τη σύνδεση ιδεών που βιώνονται μαζί.`,
+    "c1-example":`<span class="ex-tag">Στην καθημερινότητα</span>Ακούς ένα τραγούδι που έπαιζε συνέχεια ένα καλοκαίρι — και ξαφνικά επιστρέφει <b>ολόκληρη η εικόνα εκείνης της εποχής</b>. Ο ήχος και η ανάμνηση καταγράφηκαν <b>μαζί</b>, οπότε ο ένας ξυπνά τον άλλον. Αυτός είναι ο νόμος της γειτνίασης.`,
+    // Frequency
+    "c2-title":"Νόμος της Συχνότητας","c2-map":"→ Weight Updates / Gradient Descent",
+    "c2-quote":"«Όσο πιο συχνά δύο πράγματα βιώνονται μαζί, τόσο ισχυρότερος ο συσχετισμός.» — Αριστοτέλης",
+    "c2-desc":`Η επανάληψη χτίζει τη μνήμη. Κάθε φορά που δύο ιδέες εμφανίζονται μαζί, ο δεσμός δυναμώνει. Αυτό είναι <b>ακριβώς</b> το gradient descent: κάθε επανάληψη εκπαίδευσης ενημερώνει τα βάρη και μειώνει το σφάλμα.`,
+    "c2-demo-lbl":"ΕΠΑΝΑΛΗΨΕΙΣ ΕΚΠΑΙΔΕΥΣΗΣ",
+    "c2-slider-lbl":"Αριθμός επαναλήψεων","c2-m1":"ΙΣΧΥΣ ΣΥΝΔΕΣΗΣ","c2-m2":"ΣΦΑΛΜΑ",
+    "c2-insightFn":(n,s,e)=>`Μετά από <b>${n}</b> επαναλήψεις, η ισχύς της σύνδεσης έφτασε το <b style="color:#ff6b35">${s}</b> και το σφάλμα έπεσε στο <b>${e}</b>.<br>Η καμπύλη είναι λογαριθμική — <b>τα πρώτα επαναλαμβανόμενα βήματα μετράνε πιο πολύ</b>. Ακριβώς όπως στην ανθρώπινη μνήμη: οι πρώτες επαναλήψεις χαράζουν βαθύτερα.`,
+    "c2-example":`<span class="ex-tag">Στην καθημερινότητα</span>Την πρώτη μέρα σε μια νέα δουλειά δεν θυμάσαι κανένα όνομα. Μετά από μια εβδομάδα που τα ακούς <b>ξανά και ξανά</b>, τα λες χωρίς σκέψη. Δεν έγινες πιο έξυπνος — απλά η <b>επανάληψη</b> δυνάμωσε τη σύνδεση. Έτσι μαθαίνει και το δίκτυο.`,
+    // Similarity
+    "c3-title":"Νόμος της Ομοιότητας","c3-map":"→ Embeddings / Cosine Similarity",
+    "c3-quote":"«Η σκέψη ενός πράγματος πυροδοτεί τη σκέψη ενός όμοιου.» — Αριστοτέλης",
+    "c3-desc":`Βλέπεις ένα μήλο, σκέφτεσαι ένα αχλάδι. Ο νους ομαδοποιεί τα όμοια. Στο σύγχρονο ML αυτό είναι τα <b>embeddings</b>: κάθε έννοια γίνεται ένα σημείο σε πολυδιάστατο χώρο, και η <b>απόσταση</b> μετρά την ομοιότητα.`,
+    "c3-demo-lbl":"ΔΙΑΝΥΣΜΑΤΙΚΟΣ ΧΩΡΟΣ — ΚΟΝΤΙΝΑ = ΟΜΟΙΑ",
+    "c3-slider-lbl":"Επίλεξε έννοια",
+    "c3-words":["🍎 Μήλο","🍐 Αχλάδι","🐕 Σκύλος","🐈 Γάτα","🚗 Αυτοκίνητο"],
+    "c3-insightFn":(w,near)=>`Επιλεγμένη έννοια: <b style="color:#10b981">${w}</b>. Πλησιέστερη: <b>${near}</b>.<br>Στον διανυσματικό χώρο, οι όμοιες έννοιες <b>ομαδοποιούνται</b>. Η <b>cosine similarity</b> μετρά τη γωνία μεταξύ δύο διανυσμάτων — μικρή γωνία = μεγάλη ομοιότητα. Αυτό ακριβώς περιέγραψε ο Αριστοτέλης χωρίς μαθηματικά.`,
+    "c3-example":`<span class="ex-tag">Στην καθημερινότητα</span>Δοκιμάζεις ένα καινούριο φρούτο και λες «θυμίζει αχλάδι». Δεν το έχεις ξαναφάει — αλλά ο νους σου το <b>τοποθέτησε δίπλα σε κάτι γνωστό</b>. Έτσι ακριβώς το μοντέλο βάζει μια νέα λέξη κοντά σε όμοιές της στον χώρο.`,
+    // Contrast
+    "c4-title":"Νόμος της Αντίθεσης","c4-map":"→ Contrastive Learning (SimCLR, CLIP)",
+    "c4-quote":"«Το να δεις κάτι μπορεί να προκαλέσει την ανάμνηση του αντιθέτου του.» — Αριστοτέλης",
+    "c4-desc":`Το ζεστό φέρνει το κρύο, το άσπρο το μαύρο. Ο νους συνδέει και μέσω <b>αντίθεσης</b>. Το σύγχρονο <b>contrastive learning</b> (SimCLR, CLIP) κάνει ακριβώς αυτό: μαθαίνει <b>τραβώντας κοντά τα όμοια και σπρώχνοντας μακριά τα αντίθετα</b>.`,
+    "c4-demo-lbl":"CONTRASTIVE LEARNING — ΤΡΑΒΑ ΟΜΟΙΑ, ΣΠΡΩΞΕ ΑΝΤΙΘΕΤΑ",
+    "c4-slider-lbl":"Εκπαίδευση contrastive",
+    "c4-insightFn":v=>v<10?`Πριν την εκπαίδευση: όλα τα σημεία είναι <b>ανακατεμένα</b>. Το μοντέλο δεν ξέρει ακόμα τι είναι όμοιο και τι αντίθετο.`:v<90?`Εκπαίδευση ${v}%: τα όμοια <b style="color:#10b981">μαζεύονται</b>, τα αντίθετα <b style="color:#ef4444">απομακρύνονται</b>. Ο νόμος της αντίθεσης σε δράση.`:`Πλήρης εκπαίδευση: δύο καθαρές ομάδες. Το μοντέλο έμαθε <b>χωρίς ετικέτες</b> — μόνο μέσω αντίθεσης, ακριβώς όπως ο Αριστοτέλης περιέγραψε.`,
+    "c4-example":`<span class="ex-tag">Στην καθημερινότητα</span>Καταλαβαίνεις τι σημαίνει «ζεστό» μόνο επειδή ξέρεις το «κρύο». Το «φως» βγάζει νόημα δίπλα στο «σκοτάδι». Ο νους ορίζει τις έννοιες <b>και μέσω των αντιθέτων τους</b> — και τα σύγχρονα μοντέλα μαθαίνουν με τον ίδιο τρόπο.`,
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+  },
+  en:{
+    "h-sup":"THE 4 LAWS OF ASSOCIATIVE MEMORY",
+    "h-title":`Aristotle Described<br><span style="color:var(--c2)">Machine Learning in 350 BC</span>`,
+    "h-sub":"Four laws of how the mind learns — and how they became algorithms",
+    "t1":"Contiguity","t2":"Frequency","t3":"Similarity","t4":"Contrast","t5":"Summary",
+    "c1-title":"Law of Contiguity","c1-map":"→ Hebb's Rule (1949)",
+    "c1-quote":"\"When two things occur close in time or space, the mind links them.\" — Aristotle, On Memory",
+    "c1-desc":`Recalling one brings back the other, when we experienced them <b>together</b>. Lightning brings thunder. 23 centuries later, Donald Hebb formulated this as the fundamental rule of neural learning.`,
+    "c1-demo-lbl":"TWO NEURONS — HOW OFTEN DO THEY FIRE TOGETHER?",
+    "c1-slider-lbl":"Firing synchrony","c1-m1":"CONNECTION","c1-m2":"STATUS",
+    "c1-statusFn":v=>v<25?"WEAK":v<60?"FORMING":"STRONG",
+    "c1-insightFn":v=>`<b style="color:#00d4ff">"Neurons that fire together, wire together."</b><br>At ${v}% synchrony, the connection weight is <b>${(v/100).toFixed(2)}</b>. The more often the two neurons activate <b>simultaneously</b>, the stronger the synapse between them — exactly as Aristotle described the linking of ideas experienced together.`,
+    "c1-example":`<span class="ex-tag">In everyday life</span>You hear a song that played all one summer — and suddenly <b>the whole scene of that time</b> comes back. The sound and the memory were recorded <b>together</b>, so one wakes the other. This is the law of contiguity.`,
+    "c2-title":"Law of Frequency","c2-map":"→ Weight Updates / Gradient Descent",
+    "c2-quote":"\"The more frequently two things are experienced together, the stronger the association.\" — Aristotle",
+    "c2-desc":`Repetition builds memory. Each time two ideas co-occur, the bond strengthens. This is <b>exactly</b> gradient descent: each training iteration updates the weights and reduces the error.`,
+    "c2-demo-lbl":"TRAINING ITERATIONS",
+    "c2-slider-lbl":"Number of iterations","c2-m1":"CONNECTION STRENGTH","c2-m2":"ERROR",
+    "c2-insightFn":(n,s,e)=>`After <b>${n}</b> iterations, connection strength reached <b style="color:#ff6b35">${s}</b> and error dropped to <b>${e}</b>.<br>The curve is logarithmic — <b>the first repeated steps matter most</b>. Just like human memory: the first repetitions carve deepest.`,
+    "c2-example":`<span class="ex-tag">In everyday life</span>On your first day at a new job you remember no names. After a week of hearing them <b>over and over</b>, you say them without thinking. You didn't get smarter — <b>repetition</b> strengthened the connection. That's how the network learns too.`,
+    "c3-title":"Law of Similarity","c3-map":"→ Embeddings / Cosine Similarity",
+    "c3-quote":"\"The thought of one thing triggers the thought of a similar one.\" — Aristotle",
+    "c3-desc":`You see an apple, you think of a pear. The mind groups similar things. In modern ML this is <b>embeddings</b>: each concept becomes a point in high-dimensional space, and <b>distance</b> measures similarity.`,
+    "c3-demo-lbl":"VECTOR SPACE — CLOSE = SIMILAR",
+    "c3-slider-lbl":"Select a concept",
+    "c3-words":["🍎 Apple","🍐 Pear","🐕 Dog","🐈 Cat","🚗 Car"],
+    "c3-insightFn":(w,near)=>`Selected concept: <b style="color:#10b981">${w}</b>. Nearest: <b>${near}</b>.<br>In vector space, similar concepts <b>cluster</b>. <b>Cosine similarity</b> measures the angle between two vectors — small angle = high similarity. Exactly what Aristotle described without the mathematics.`,
+    "c3-example":`<span class="ex-tag">In everyday life</span>You taste a new fruit and say "it's like a pear." You've never had it before — but your mind <b>placed it next to something familiar</b>. That's exactly how the model puts a new word near similar ones in space.`,
+    "c4-title":"Law of Contrast","c4-map":"→ Contrastive Learning (SimCLR, CLIP)",
+    "c4-quote":"\"Seeing one thing can trigger the memory of its opposite.\" — Aristotle",
+    "c4-desc":`Hot brings cold, white brings black. The mind links through <b>contrast</b> too. Modern <b>contrastive learning</b> (SimCLR, CLIP) does exactly this: it learns by <b>pulling similar things together and pushing opposites apart</b>.`,
+    "c4-demo-lbl":"CONTRASTIVE LEARNING — PULL SIMILAR, PUSH OPPOSITE",
+    "c4-slider-lbl":"Contrastive training",
+    "c4-insightFn":v=>v<10?`Before training: all points are <b>mixed</b>. The model doesn't yet know what is similar and what is opposite.`:v<90?`Training ${v}%: similar points <b style="color:#10b981">gather</b>, opposites <b style="color:#ef4444">separate</b>. The law of contrast in action.`:`Fully trained: two clean clusters. The model learned <b>without labels</b> — only through contrast, exactly as Aristotle described.`,
+    "c4-example":`<span class="ex-tag">In everyday life</span>You only grasp "hot" because you know "cold". "Light" makes sense next to "dark". The mind defines concepts <b>through their opposites too</b> — and modern models learn the very same way.`,
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+  }
+};
+
+// Embedding positions for similarity demo (x,y in 0-1) — semantic clustering
+const EMBEDDINGS=[
+  {w:0,x:0.25,y:0.30,fruit:true},  // apple
+  {w:1,x:0.32,y:0.24,fruit:true},  // pear
+  {w:2,x:0.72,y:0.68,animal:true}, // dog
+  {w:3,x:0.78,y:0.60,animal:true}, // cat
+  {w:4,x:0.50,y:0.85,vehicle:true} // car
+];
+</script>
+<script>
+let lang='el';
+
+// ═══ CONTIGUITY ═══
+function updateContiguity(){
+  const v=+document.getElementById('c1-slider').value;
+  const t=T[lang];
+  document.getElementById('c1-val').textContent=v+'%';
+  document.getElementById('c1-weight').textContent=(v/100).toFixed(2);
+  document.getElementById('c1-status').textContent=t['c1-statusFn'](v);
+  document.getElementById('c1-insight').innerHTML=t['c1-insightFn'](v);
+  drawContiguity(v);
+}
+function drawContiguity(v){
+  const cv=document.getElementById('c1-canvas');if(!cv)return;
+  cv.width=cv.offsetWidth||620;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const y=H/2, r=26;
+  const x1=W*0.28, x2=W*0.72;
+  const strength=v/100;
+  // connection line
+  ctx.strokeStyle=`rgba(0,212,255,${0.15+strength*0.85})`;
+  ctx.lineWidth=1+strength*10;
+  ctx.beginPath();ctx.moveTo(x1+r,y);ctx.lineTo(x2-r,y);ctx.stroke();
+  // pulse dots along the line if strong
+  if(strength>0.3){
+    const t=Date.now()/600;
+    for(let i=0;i<3;i++){
+      const p=((t+i/3)%1);
+      const px=x1+r+(x2-x1-2*r)*p;
+      ctx.beginPath();ctx.arc(px,y,3+strength*2,0,6.28);
+      ctx.fillStyle=`rgba(0,212,255,${(1-p)*strength})`;ctx.fill();
+    }
+  }
+  // neurons
+  [[x1,'A'],[x2,'B']].forEach(([x,label])=>{
+    ctx.beginPath();ctx.arc(x,y,r,0,6.28);
+    ctx.fillStyle='#111827';ctx.fill();
+    ctx.strokeStyle='#00d4ff';ctx.lineWidth=2.5;ctx.stroke();
+    // glow when synced
+    if(strength>0.6){ctx.shadowColor='#00d4ff';ctx.shadowBlur=15;ctx.stroke();ctx.shadowBlur=0;}
+    ctx.fillStyle='#00d4ff';ctx.font='bold 15px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,x,y);
+  });
+  if(strength>0.3) requestAnimationFrame(()=>{if(document.getElementById('content-contiguity').classList.contains('active'))drawContiguity(v);});
+}
+
+// ═══ FREQUENCY ═══
+function updateFrequency(){
+  const n=+document.getElementById('c2-slider').value;
+  const t=T[lang];
+  document.getElementById('c2-val').textContent=n;
+  // logarithmic strengthening
+  const strength=1-Math.exp(-n/22);
+  const error=Math.exp(-n/22);
+  document.getElementById('c2-strength').textContent=strength.toFixed(2);
+  document.getElementById('c2-error').textContent=error.toFixed(2);
+  document.getElementById('c2-insight').innerHTML=t['c2-insightFn'](n,strength.toFixed(2),error.toFixed(2));
+  drawFrequency(n);
+}
+function drawFrequency(n){
+  const cv=document.getElementById('c2-canvas');if(!cv)return;
+  cv.width=cv.offsetWidth||620;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=34,padB=22,padT=10;
+  const pw=W-pad-10,ph=H-padB-padT;
+  const tx=i=>pad+(i/100)*pw;
+  const ty=val=>padT+(1-val)*ph;
+  // grid
+  ctx.strokeStyle='#1e2d4544';ctx.lineWidth=.5;
+  for(let g=0;g<=4;g++){const yy=padT+ph*g/4;ctx.beginPath();ctx.moveTo(pad,yy);ctx.lineTo(W-10,yy);ctx.stroke();
+    ctx.fillStyle='#47556988';ctx.font='8px IBM Plex Mono,monospace';ctx.textAlign='right';ctx.fillText((1-g/4).toFixed(2),pad-3,yy+3);}
+  // strength curve
+  ctx.strokeStyle='#ff6b35';ctx.lineWidth=2.4;ctx.beginPath();
+  for(let i=0;i<=100;i++){const s=1-Math.exp(-i/22);const x=tx(i),yy=ty(s);i===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);}
+  ctx.stroke();
+  // error curve (dashed)
+  ctx.strokeStyle='#47556988';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();
+  for(let i=0;i<=100;i++){const e=Math.exp(-i/22);const x=tx(i),yy=ty(e);i===0?ctx.moveTo(x,yy):ctx.lineTo(x,yy);}
+  ctx.stroke();ctx.setLineDash([]);
+  // current point
+  const s=1-Math.exp(-n/22);
+  ctx.beginPath();ctx.arc(tx(n),ty(s),5,0,6.28);ctx.fillStyle='#ff6b35';ctx.fill();
+  ctx.strokeStyle='#07090f';ctx.lineWidth=2;ctx.stroke();
+  // labels
+  ctx.fillStyle='#ff6b35';ctx.font='bold 9px IBM Plex Mono,monospace';ctx.textAlign='left';
+  ctx.fillText(lang==='el'?'Ισχύς σύνδεσης':'Strength',tx(55),ty(0.92));
+  ctx.fillStyle='#64748b';ctx.fillText(lang==='el'?'Σφάλμα':'Error',tx(55),ty(0.12));
+}
+
+// ═══ SIMILARITY ═══
+function updateSimilarity(){
+  const idx=(+document.getElementById('c3-slider').value)||0;
+  const t=T[lang];
+  document.getElementById('c3-val').textContent=t['c3-words'][idx];
+  // find nearest
+  const sel=EMBEDDINGS[idx];
+  let best=-1,bestD=999;
+  EMBEDDINGS.forEach((e,i)=>{if(i===idx)return;const d=Math.hypot(e.x-sel.x,e.y-sel.y);if(d<bestD){bestD=d;best=i;}});
+  document.getElementById('c3-insight').innerHTML=t['c3-insightFn'](t['c3-words'][idx],t['c3-words'][best]);
+  drawSimilarity(idx,best);
+}
+function drawSimilarity(sel,near){
+  const cv=document.getElementById('c3-canvas');if(!cv)return;
+  cv.width=cv.offsetWidth||620;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const t=T[lang];
+  const px=e=>20+e.x*(W-40), py=e=>15+e.y*(H-30);
+  // connection to nearest
+  const s=EMBEDDINGS[sel],nr=EMBEDDINGS[near];
+  ctx.strokeStyle='#10b98166';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(px(s),py(s));ctx.lineTo(px(nr),py(nr));ctx.stroke();ctx.setLineDash([]);
+  // midpoint distance label
+  ctx.fillStyle='#10b981';ctx.font='9px IBM Plex Mono,monospace';ctx.textAlign='center';
+  const d=Math.hypot(s.x-nr.x,s.y-nr.y);
+  ctx.fillText('d='+d.toFixed(2),(px(s)+px(nr))/2,(py(s)+py(nr))/2-6);
+  // points
+  EMBEDDINGS.forEach((e,i)=>{
+    const isSel=i===sel,isNear=i===near;
+    const r=isSel?22:16;
+    ctx.beginPath();ctx.arc(px(e),py(e),r,0,6.28);
+    ctx.fillStyle=isSel?'#10b98133':isNear?'#10b98122':'#11182799';
+    ctx.fill();
+    ctx.strokeStyle=isSel?'#10b981':isNear?'#10b98188':'#334155';
+    ctx.lineWidth=isSel?2.5:1.5;ctx.stroke();
+    ctx.font=(isSel?'16':'13')+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(t['c3-words'][i].split(' ')[0],px(e),py(e));
+  });
+}
+
+// ═══ CONTRAST ═══
+function updateContrast(){
+  const v=+document.getElementById('c4-slider').value;
+  const t=T[lang];
+  document.getElementById('c4-val').textContent=v+'%';
+  document.getElementById('c4-insight').innerHTML=t['c4-insightFn'](v);
+  drawContrast(v);
+}
+// stable pseudo-random start positions
+const C4PTS=[];
+(function(){let seed=42;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+  for(let i=0;i<16;i++){C4PTS.push({sx:rnd(),sy:rnd(),group:i%2});}})();
+function drawContrast(v){
+  const cv=document.getElementById('c4-canvas');if(!cv)return;
+  cv.width=cv.offsetWidth||620;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const prog=v/100;
+  // target cluster centers
+  const cA={x:W*0.28,y:H*0.5},cB={x:W*0.72,y:H*0.5};
+  C4PTS.forEach(p=>{
+    const startX=20+p.sx*(W-40),startY=15+p.sy*(H-30);
+    const target=p.group===0?cA:cB;
+    // add slight jitter around target
+    const jx=(p.sx-0.5)*60,jy=(p.sy-0.5)*60;
+    const x=startX+(target.x+jx-startX)*prog;
+    const y=startY+(target.y+jy-startY)*prog;
+    const col=p.group===0?'#10b981':'#ef4444';
+    ctx.beginPath();ctx.arc(x,y,7,0,6.28);
+    ctx.fillStyle=col+'cc';ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+  });
+  // cluster labels when trained
+  if(prog>0.6){
+    ctx.globalAlpha=(prog-0.6)/0.4;
+    ctx.font='bold 11px IBM Plex Mono,monospace';ctx.textAlign='center';
+    ctx.fillStyle='#10b981';ctx.fillText(lang==='el'?'ΟΜΟΙΑ':'SIMILAR',cA.x,H-8);
+    ctx.fillStyle='#ef4444';ctx.fillText(lang==='el'?'ΑΝΤΙΘΕΤΑ':'OPPOSITE',cB.x,H-8);
+    ctx.globalAlpha=1;
+  }
+}
+
+// ═══ SUMMARY ═══
+function renderSummary(){
+  const isEl=lang==='el';
+  const rows=[
+    {c:'#00d4ff',law:isEl?'Γειτνίαση':'Contiguity',anc:isEl?'Πράγματα κοντά σε χώρο/χρόνο συνδέονται':'Things close in space/time link',ml:isEl?'Κανόνας Hebb — "fire together, wire together"':'Hebb\'s Rule — "fire together, wire together"'},
+    {c:'#ff6b35',law:isEl?'Συχνότητα':'Frequency',anc:isEl?'Η επανάληψη δυναμώνει τον δεσμό':'Repetition strengthens the bond',ml:isEl?'Gradient descent — weight updates':'Gradient descent — weight updates'},
+    {c:'#10b981',law:isEl?'Ομοιότητα':'Similarity',anc:isEl?'Το όμοιο φέρνει το όμοιο':'Like recalls like',ml:isEl?'Embeddings / cosine similarity':'Embeddings / cosine similarity'},
+    {c:'#a78bfa',law:isEl?'Αντίθεση':'Contrast',anc:isEl?'Το αντίθετο πυροδοτεί το αντίθετο':'Opposite triggers opposite',ml:isEl?'Contrastive learning (SimCLR, CLIP)':'Contrastive learning (SimCLR, CLIP)'},
+  ];
+  document.getElementById('summary-container').innerHTML=`
+    <div class="panel" style="border-color:#7c3aed33">
+      <div class="plbl" style="color:#a78bfa">${isEl?'Η ΚΕΝΤΡΙΚΗ ΙΔΕΑ':'THE CENTRAL IDEA'}</div>
+      <p style="color:var(--sub);font-size:12px;line-height:1.9">
+        ${isEl?`Το 350 π.Χ., στο έργο του <i>Περὶ μνήμης καὶ ἀναμνήσεως</i>, ο Αριστοτέλης προσπάθησε να εξηγήσει <b style="color:var(--text)">πώς ο νους συνδέει ιδέες</b>. Διατύπωσε τρεις νόμους συσχέτισης — γειτνίαση, ομοιότητα, αντίθεση — και τον νόμο της συχνότητας.<br><br>23 αιώνες αργότερα, <b style="color:var(--text)">οι ίδιοι τέσσερις νόμοι</b> βρίσκονται στην καρδιά του machine learning. Δεν είναι μεταφορά — είναι δομική αντιστοιχία.`
+        :`In 350 BC, in his work <i>On Memory and Recollection</i>, Aristotle tried to explain <b style="color:var(--text)">how the mind links ideas</b>. He formulated three laws of association — contiguity, similarity, contrast — plus the law of frequency.<br><br>23 centuries later, <b style="color:var(--text)">the same four laws</b> sit at the heart of machine learning. This is not metaphor — it is structural correspondence.`}
+      </p>
+    </div>
+    <div class="panel">
+      <div class="plbl" style="color:var(--muted)">${isEl?'ΟΙ ΤΕΣΣΕΡΙΣ ΝΟΜΟΙ':'THE FOUR LAWS'}</div>
+      <table>
+        <thead><tr><th>${isEl?'Νόμος':'Law'}</th><th>${isEl?'Ο Αριστοτέλης':'Aristotle'}</th><th>${isEl?'Σύγχρονο ML':'Modern ML'}</th></tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr><td style="color:${r.c};font-weight:700">${r.law}</td><td style="color:var(--sub)">${r.anc}</td><td style="color:var(--text)">${r.ml}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel" style="border-color:#f59e0b44">
+      <div class="plbl" style="color:#f59e0b">${isEl?'Η ΣΥΝΔΕΣΗ ΜΕ ΤΗ ΣΕΙΡΑ':'CONNECTION TO THE SERIES'}</div>
+      <p style="color:var(--sub);font-size:12px;line-height:1.9">
+        ${isEl?`Ο Αριστοτέλης εμφανίστηκε ήδη στη σειρά: στο <b>Post 2</b> ως η ομαλή Sigmoid («η φύση δεν κάνει άλματα»), και στο <b>vanishing gradient</b> ως η χρυσή μεσότης του GELU.<br><br>Τώρα κλείνει ο κύκλος: <b style="color:var(--text)">ο ίδιος φιλόσοφος που περιέγραψε την activation function, περιέγραψε και το πώς μαθαίνει το δίκτυο.</b>`
+        :`Aristotle already appeared in the series: in <b>Post 2</b> as the smooth Sigmoid ("nature makes no leaps"), and in <b>vanishing gradient</b> as the golden mean of GELU.<br><br>Now the circle closes: <b style="color:var(--text)">the same philosopher who described the activation function also described how the network learns.</b>`}
+      </p>
+      <div class="src">
+        ${isEl?'Πηγή':'Source'}: Aristotle, <i>On Memory and Recollection (Περὶ μνήμης)</i>, 350 BC · Hebb, D.O. (1949) <i>The Organization of Behavior</i> · Chen et al. (2020) <i>SimCLR</i> · Radford et al. (2021) <i>CLIP</i>
+      </div>
+    </div>`;
+}
+
+// ═══ LANG + TABS ═══
+function setLang(l){
+  lang=l;
+  document.getElementById('btn-el').classList.toggle('active',l==='el');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  const t=T[l];
+  for(const[id,v]of Object.entries(t)){
+    if(typeof v==='string'){const el=document.getElementById(id);if(el)el.innerHTML=v;}
+  }
+  updateContiguity();updateFrequency();updateSimilarity();updateContrast();renderSummary();
+}
+function setTab(id){
+  ['contiguity','frequency','similarity','contrast','summary'].forEach(x=>{
+    document.getElementById('content-'+x).classList.toggle('active',x===id);
+    document.getElementById('tab-'+x).classList.toggle('active',x===id);
+  });
+  if(id==='contiguity')setTimeout(()=>updateContiguity(),30);
+  if(id==='frequency')setTimeout(()=>drawFrequency(+document.getElementById('c2-slider').value),30);
+  if(id==='similarity')setTimeout(()=>updateSimilarity(),30);
+  if(id==='contrast')setTimeout(()=>drawContrast(+document.getElementById('c4-slider').value),30);
+}
+
+// ═══ INIT ═══
+setLang('el');
+window.addEventListener('resize',()=>{
+  const active=document.querySelector('.tab-content.active').id.replace('content-','');
+  setTab(active);
+});
+</script>
+</body>
+</html>
