@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Δεν Ξέρω | Why AI Can't Say "I Don't Know"</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#07090f;--panel:#111827;--border:#1e2d45;
+  --c1:#00d4ff;--c2:#ff6b35;--c3:#7c3aed;--c4:#f59e0b;--c5:#10b981;
+  --red:#ef4444;--text:#e2e8f0;--muted:#475569;--sub:#94a3b8;--hi:#0a0e1a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;padding:14px;max-width:780px;margin:0 auto}
+.lang-bar{display:flex;justify-content:flex-end;gap:6px;margin-bottom:14px}
+.lang-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.lang-btn.active{border-color:var(--c1);background:#00d4ff18;color:var(--c1)}
+.hdr{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.hdr-sup{font-size:10px;letter-spacing:4px;color:var(--c3);margin-bottom:6px;line-height:1.6}
+.hdr-title{font-size:20px;font-weight:900;line-height:1.35;margin-bottom:6px}
+.hdr-sub{color:var(--muted);font-size:11px;line-height:1.6}
+.tabs{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:70px;padding:8px 3px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--border);color:var(--text)}
+.tab-content{display:none}.tab-content.active{display:block}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.plbl{font-size:9px;letter-spacing:3px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.cbox{background:var(--hi);border-radius:7px;padding:9px 12px;margin-bottom:7px;font-size:11px;line-height:1.7}
+.cbox-title{font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.intro-box{background:#7c3aed11;border:1px solid #7c3aed44;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:11px;line-height:1.8;color:var(--sub)}
+.intro-box strong{color:var(--text)}
+.warn-box{background:#ef444411;border:1px solid #ef444444;border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:11px;line-height:1.75;color:var(--sub)}
+.warn-box strong{color:#fca5a5}
+/* QUIZ */
+.q-card{background:var(--panel);border:2px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;transition:border-color .3s}
+.q-card.revealed-trap{border-color:#ef444466}
+.q-card.revealed-real{border-color:#10b98166}
+.q-num{font-size:9px;letter-spacing:2px;color:var(--c3);margin-bottom:6px}
+.q-text{font-size:13px;font-weight:700;line-height:1.6;margin-bottom:12px}
+.q-answer{background:var(--hi);border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:3px solid var(--c1)}
+.q-answer-label{font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:5px}
+.q-answer-text{font-size:11px;line-height:1.7;color:var(--text)}
+.conf-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.conf-label{font-size:9px;color:var(--muted);width:70px;flex-shrink:0}
+.conf-track{flex:1;height:20px;background:var(--hi);border-radius:5px;overflow:hidden}
+.conf-fill{height:100%;border-radius:5px;transition:width .8s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;font-size:9px;font-weight:700;color:#000}
+.reveal-btn{width:100%;padding:9px;border-radius:8px;border:1px solid var(--c3);background:#7c3aed18;color:#a78bfa;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s}
+.reveal-btn:hover{background:#7c3aed28}
+.verdict{border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;line-height:1.7;display:none}
+.verdict.show{display:block;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.verdict.trap{background:#ef444415;border:1px solid #ef444444;color:#fca5a5}
+.verdict.real{background:#10b98115;border:1px solid #10b98144;color:#a7f3d0}
+.verdict b{color:var(--text)}
+.score-panel{background:var(--panel);border:1px solid var(--c4);border-radius:12px;padding:12px;margin-bottom:12px;text-align:center}
+.score-big{font-size:26px;font-weight:900;color:var(--c4);margin:4px 0}
+/* SLIDER */
+input[type=range]{width:100%;accent-color:var(--c3);height:5px;cursor:pointer}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;font-size:10px;color:var(--muted)}
+.slider-head b{color:var(--text);font-size:17px}
+/* PAYOFF TABLE */
+.payoff{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:10px 0}
+.pay-cell{background:var(--hi);border-radius:8px;padding:9px 7px;text-align:center;border:1px solid var(--border);transition:all .3s}
+.pay-cell.winner{border-color:var(--c5);background:#10b98115;box-shadow:0 0 12px #10b98133}
+.pay-name{font-size:9px;color:var(--muted);margin-bottom:3px}
+.pay-val{font-size:17px;font-weight:900}
+.pay-sub{font-size:8px;color:var(--muted);margin-top:2px}
+.strategy-banner{border-radius:8px;padding:11px 13px;margin-top:10px;font-size:12px;font-weight:700;text-align:center;transition:all .4s;line-height:1.6}
+/* CALIBRATION */
+canvas{display:block;width:100%!important}
+.toggle-row{display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap}
+.tog-btn{flex:1;min-width:120px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.tog-btn.active{border-color:var(--c2);background:#ff6b3518;color:var(--c2)}
+.tog-btn.active.good{border-color:var(--c5);background:#10b98118;color:var(--c5)}
+.ece-row{display:flex;gap:8px;margin-top:10px}
+.ece-card{flex:1;background:var(--hi);border-radius:8px;padding:9px;text-align:center}
+.ece-lbl{font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:3px}
+.ece-val{font-size:16px;font-weight:900}
+/* PHIL */
+.pcrd{background:var(--panel);border-radius:12px;padding:13px;margin-bottom:9px}
+.pico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;font-weight:700}
+.pquote{border-radius:6px;padding:7px 10px;margin-bottom:8px;font-size:11px;font-style:italic;color:var(--sub)}
+table{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px}
+th{padding:6px 7px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:6px 7px;border-bottom:1px solid var(--hi)}
+.src{font-size:9px;color:var(--muted);line-height:1.8;margin-top:8px}
+.src a{color:var(--c1);text-decoration:none}
+.footer{text-align:center;padding:16px 0 6px;color:var(--muted);font-size:10px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('el')" id="btn-el">🇬🇷 ΕΛ</button>
+  <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 EN</button>
+</div>
+
+<div class="hdr">
+  <div class="hdr-sup" id="h-sup">ΤΟ ΜΕΓΑΛΥΤΕΡΟ ΠΡΟΒΛΗΜΑ ΤΟΥ AI</div>
+  <div class="hdr-title" id="h-title">Δεν είναι ότι δεν ξέρει.<br><span style="color:var(--c2)">Είναι ότι δεν ξέρει ότι δεν ξέρει.</span></div>
+  <div class="hdr-sub" id="h-sub">Γιατί τα γλωσσικά μοντέλα μαντεύουν αντί να πουν «δεν ξέρω»</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('quiz')" id="tab-quiz">🎭 <span id="t1">Το Κουίζ</span></button>
+  <button class="tab-btn" onclick="setTab('lab')" id="tab-lab">🎛 <span id="t2">Τα Κίνητρα</span></button>
+  <button class="tab-btn" onclick="setTab('calib')" id="tab-calib">📊 <span id="t3">Calibration</span></button>
+  <button class="tab-btn" onclick="setTab('phil')" id="tab-phil">🏛 <span id="t4">Φιλοσοφία</span></button>
+</div>
+
+<!-- ═══ SCENE 1: QUIZ ═══ -->
+<div class="tab-content active" id="content-quiz">
+  <div class="intro-box" id="quiz-intro"></div>
+  <div id="quiz-container"></div>
+  <div class="score-panel" id="score-panel" style="display:none">
+    <div class="plbl" style="color:var(--c4)" id="score-lbl">ΑΠΟΤΕΛΕΣΜΑ</div>
+    <div class="score-big" id="score-big"></div>
+    <div style="font-size:11px;color:var(--sub);line-height:1.7" id="score-text"></div>
+  </div>
+</div>
+
+<!-- ═══ SCENE 2: INCENTIVE LAB ═══ -->
+<div class="tab-content" id="content-lab">
+  <div class="intro-box" id="lab-intro"></div>
+  <div class="panel">
+    <div class="slider-head">
+      <span id="pen-lbl">Ποινή για λάθος απάντηση</span>
+      <b id="pen-val">0</b>
+    </div>
+    <input type="range" id="pen-slider" min="0" max="9" step="1" value="0" oninput="updateLab()">
+    <div style="font-size:9px;color:var(--muted);margin-top:5px" id="pen-note"></div>
+  </div>
+  <div class="panel">
+    <div class="slider-head">
+      <span id="conf-lbl">Πόσο σίγουρο είναι το μοντέλο (p)</span>
+      <b id="conf-val">40%</b>
+    </div>
+    <input type="range" id="conf-slider" min="5" max="95" step="5" value="40" oninput="updateLab()">
+  </div>
+  <div class="panel">
+    <div class="plbl" style="color:var(--muted)" id="payoff-lbl">ΠΡΟΣΔΟΚΩΜΕΝΗ ΤΙΜΗ ΚΑΘΕ ΣΤΡΑΤΗΓΙΚΗΣ</div>
+    <div class="payoff" id="payoff-grid"></div>
+    <div class="strategy-banner" id="strategy-banner"></div>
+    <div class="cbox" style="margin-top:11px" id="lab-math"></div>
+  </div>
+  <div class="warn-box" id="lab-insight"></div>
+</div>
+
+<!-- ═══ SCENE 3: CALIBRATION ═══ -->
+<div class="tab-content" id="content-calib">
+  <div class="intro-box" id="calib-intro"></div>
+  <div class="toggle-row">
+    <button class="tog-btn active" id="tog-llm" onclick="setModel('llm')"></button>
+    <button class="tog-btn good" id="tog-cal" onclick="setModel('cal')"></button>
+  </div>
+  <div class="panel">
+    <canvas id="calib-chart" height="300"></canvas>
+    <div class="ece-row" id="ece-row"></div>
+  </div>
+  <div class="cbox" id="calib-explain"></div>
+</div>
+
+<!-- ═══ SCENE 4: PHILOSOPHY ═══ -->
+<div class="tab-content" id="content-phil">
+  <div id="phil-container"></div>
+</div>
+
+<div class="footer">
+  <div id="footer-txt">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+  <div style="margin-top:3px;color:#334155" id="footer-sub">Βασισμένο στο βιβλίο «ΔΕΝ ΞΕΡΩ»</div>
+</div>
+<script>
+// ══════════════════════════════════════════════
+// QUIZ DATA — 3 traps, 2 real
+// ══════════════════════════════════════════════
+const QUESTIONS=[
+  {
+    trap:true, conf:87,
+    qEl:'Ποιος έγραψε το βιβλίο «Η Θεωρία των Χρωματιστών Αριθμών» (1923);',
+    qEn:'Who wrote the book "The Theory of Coloured Numbers" (1923)?',
+    aEl:'Το βιβλίο γράφτηκε από τον Γερμανό μαθηματικό <b>Heinrich Wessling</b>. Εκδόθηκε το 1923 στη Λειψία και θεωρείται πρόδρομος της σύγχρονης θεωρίας γραφημάτων. Ο Wessling εισήγαγε την έννοια της χρωματικής ταξινόμησης αριθμητικών ακολουθιών.',
+    aEn:'The book was written by German mathematician <b>Heinrich Wessling</b>. Published in 1923 in Leipzig, it is considered a precursor to modern graph theory. Wessling introduced the concept of chromatic classification of numerical sequences.',
+    vEl:'❌ <b>ΤΟ ΒΙΒΛΙΟ ΔΕΝ ΥΠΑΡΧΕΙ.</b> Ο Heinrich Wessling δεν υπάρχει. Τίποτα από αυτά δεν είναι αληθινό. Και όμως — <b>87% σιγουριά</b>, με ημερομηνία, πόλη, και επιστημονική συνεισφορά.',
+    vEn:'❌ <b>THE BOOK DOES NOT EXIST.</b> Heinrich Wessling does not exist. None of this is real. And yet — <b>87% confidence</b>, with a date, a city, and a scientific contribution.'
+  },
+  {
+    trap:false, conf:91,
+    qEl:'Ποιος πρότεινε τον όρο «Artificial Intelligence»;',
+    qEn:'Who coined the term "Artificial Intelligence"?',
+    aEl:'Ο <b>John McCarthy</b> πρότεινε τον όρο «Artificial Intelligence» στη Συνδιάσκεψη του Dartmouth το 1956.',
+    aEn:'<b>John McCarthy</b> proposed the term "Artificial Intelligence" at the Dartmouth Conference in 1956.',
+    vEl:'✅ <b>ΣΩΣΤΟ.</b> Εδώ το μοντέλο όντως ξέρει. Το πρόβλημα; <b>Η σιγουριά του (91%) είναι σχεδόν ίδια με πριν (87%)</b> — όταν έλεγε ψέματα. Δεν μπορείς να ξεχωρίσεις από τη σιγουριά πότε έχει δίκιο.',
+    vEn:'✅ <b>CORRECT.</b> Here the model genuinely knows. The problem? <b>Its confidence (91%) is nearly identical to before (87%)</b> — when it was fabricating. You cannot tell from the confidence when it is right.'
+  },
+  {
+    trap:true, conf:79,
+    qEl:'Τι προβλέπει το Άρθρο 47Β του Κανονισμού AI της ΕΕ για τα LLMs;',
+    qEn:'What does Article 47B of the EU AI Regulation stipulate for LLMs?',
+    aEl:'Το <b>Άρθρο 47Β</b> επιβάλλει υποχρεωτική δήλωση αβεβαιότητας για κάθε σύστημα υψηλού κινδύνου. Τα LLMs πρέπει να παρέχουν confidence scores βαθμονομημένα εντός ±5%, με ποινές έως 4% του παγκόσμιου τζίρου για παραβάσεις.',
+    aEn:'<b>Article 47B</b> mandates uncertainty disclosure for all high-risk systems. LLMs must provide confidence scores calibrated within ±5%, with penalties up to 4% of global turnover for violations.',
+    vEl:'❌ <b>ΤΟ ΑΡΘΡΟ 47Β ΔΕΝ ΥΠΑΡΧΕΙ.</b> Το μοντέλο συνδύασε αληθινά μοτίβα (ο EU AI Act όντως έχει άρθρα, όντως μιλά για high-risk, όντως έχει ποινές % τζίρου) και παρήγαγε κάτι <b>απόλυτα εύλογο και εντελώς ψεύτικο</b>.',
+    vEn:'❌ <b>ARTICLE 47B DOES NOT EXIST.</b> The model combined real patterns (the EU AI Act does have articles, does discuss high-risk, does have turnover-based penalties) and produced something <b>perfectly plausible and entirely fabricated</b>.'
+  },
+  {
+    trap:true, conf:83,
+    qEl:'Πότε γεννήθηκε ο Adam Tauman Kalai, ερευνητής της OpenAI;',
+    qEn:'When was Adam Tauman Kalai, the OpenAI researcher, born?',
+    aEl:'Ο Adam Tauman Kalai γεννήθηκε στις <b>14 Μαρτίου 1975</b>.',
+    aEn:'Adam Tauman Kalai was born on <b>14 March 1975</b>.',
+    vEl:'❌ <b>ΕΦΕΥΡΕΘΗΚΕ.</b> Αυτό είναι <b>πραγματικό πείραμα</b> από το paper «Why Language Models Hallucinate» (OpenAI, 2025). Ρώτησαν ένα chatbot τα γενέθλια του συγγραφέα — έδωσε <b>τρεις διαφορετικές ημερομηνίες</b>, όλες λάθος. Και τη διατριβή του — <b>τρεις διαφορετικούς τίτλους</b>, όλους λάθος.',
+    vEn:'❌ <b>FABRICATED.</b> This is a <b>real experiment</b> from the paper "Why Language Models Hallucinate" (OpenAI, 2025). They asked a chatbot for the author\'s birthday — it gave <b>three different dates</b>, all wrong. And his dissertation title — <b>three different titles</b>, all wrong.'
+  },
+  {
+    trap:false, conf:88,
+    qEl:'Ποια είναι η μέγιστη παράγωγος της συνάρτησης Sigmoid;',
+    qEn:'What is the maximum derivative of the Sigmoid function?',
+    aEl:'Η μέγιστη παράγωγος της Sigmoid είναι <b>0.25</b>, στο σημείο x=0. Αυτό προκαλεί το vanishing gradient problem σε βαθιά δίκτυα.',
+    aEn:'The maximum derivative of Sigmoid is <b>0.25</b>, at x=0. This causes the vanishing gradient problem in deep networks.',
+    vEl:'✅ <b>ΣΩΣΤΟ.</b> Πάλι σωστό. Αλλά πρόσεξε: <b>88% σιγουριά</b> — ανάμεσα στο 87% της πρώτης ψεύτικης απάντησης και στο 91% της πρώτης σωστής. <b>Η σιγουριά δεν διαχωρίζει τίποτα.</b>',
+    vEn:'✅ <b>CORRECT.</b> Right again. But notice: <b>88% confidence</b> — between the 87% of the first fabrication and the 91% of the first correct answer. <b>Confidence separates nothing.</b>'
+  },
+];
+
+// ══════════════════════════════════════════════
+// CALIBRATION DATA
+// ══════════════════════════════════════════════
+// Bins: stated confidence → actual accuracy
+const CALIB={
+  llm:[ // typical RLHF-trained LLM — overconfident
+    {stated:0.55,actual:0.42},{stated:0.65,actual:0.48},{stated:0.75,actual:0.55},
+    {stated:0.85,actual:0.63},{stated:0.90,actual:0.68},{stated:0.95,actual:0.74},
+    {stated:0.99,actual:0.80},
+  ],
+  cal:[ // well-calibrated model
+    {stated:0.55,actual:0.54},{stated:0.65,actual:0.66},{stated:0.75,actual:0.73},
+    {stated:0.85,actual:0.86},{stated:0.90,actual:0.89},{stated:0.95,actual:0.94},
+    {stated:0.99,actual:0.97},
+  ]
+};
+function computeECE(pts){
+  return pts.reduce((s,p)=>s+Math.abs(p.stated-p.actual),0)/pts.length;
+}
+
+// ══════════════════════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════════════════════
+const T={
+  el:{
+    "h-sup":"ΤΟ ΜΕΓΑΛΥΤΕΡΟ ΠΡΟΒΛΗΜΑ ΤΟΥ AI",
+    "h-title":`Δεν είναι ότι δεν ξέρει.<br><span style="color:var(--c2)">Είναι ότι δεν ξέρει ότι δεν ξέρει.</span>`,
+    "h-sub":"Γιατί τα γλωσσικά μοντέλα μαντεύουν αντί να πουν «δεν ξέρω»",
+    "t1":"Το Κουίζ","t2":"Τα Κίνητρα","t3":"Calibration","t4":"Φιλοσοφία",
+    "quiz-intro":`<strong>📌 Το Πείραμα:</strong> Πέντε ερωτήσεις. Μερικές έχουν απάντηση — μερικές είναι <strong>παγίδες</strong> για πράγματα που <strong>δεν υπάρχουν</strong>. Το μοντέλο απαντά <strong>πάντα</strong>, με confidence bar. Διάβασε την απάντηση, μάντεψε αν είναι αληθινή, και πάτα «Αποκάλυψη».<br><br><span style="color:var(--muted);font-size:10px">Οι απαντήσεις είναι αναπαραστάσεις τυπικής συμπεριφοράς LLM (προσομοίωση, όχι live API) — για να δείξουμε το φαινόμενο ελεγχόμενα.</span>`,
+    "reveal":"🔍 Αποκάλυψη",
+    "conf-label":"Σιγουριά",
+    "answer-label":"ΑΠΑΝΤΗΣΗ ΤΟΥ ΜΟΝΤΕΛΟΥ",
+    "q-num":n=>`ΕΡΩΤΗΣΗ ${n}/5`,
+    "score-lbl":"ΑΠΟΤΕΛΕΣΜΑ",
+    "score-fn":(traps,avgT,avgR)=>`<b style="color:var(--red)">${traps} από τις 5 ήταν παγίδες.</b><br><br>Μέση σιγουριά στις <span style="color:var(--red)">ψεύτικες</span> απαντήσεις: <b>${avgT}%</b><br>Μέση σιγουριά στις <span style="color:var(--c5)">σωστές</span> απαντήσεις: <b>${avgR}%</b><br><br><b style="color:var(--c4)">Διαφορά: ${Math.abs(avgR-avgT).toFixed(1)} μονάδες.</b><br><span style="color:var(--muted);font-size:10px">Η σιγουριά δεν σου λέει τίποτα για την αλήθεια.</span>`,
+
+    "lab-intro":`<strong>📌 Εδώ είναι η καρδιά του προβλήματος.</strong> Το μοντέλο <em>μπορεί</em> να πει «δεν ξέρω» — η φράση υπάρχει στο λεξιλόγιό του. Το θέμα είναι ότι <strong>δεν συμφέρει</strong>. Κούνα τα sliders και δες πώς η <strong>ποινή για λάθος</strong> αλλάζει τη βέλτιστη στρατηγική.`,
+    "pen-lbl":"Ποινή για λάθος απάντηση",
+    "conf-lbl":"Πόσο σίγουρο είναι το μοντέλο (p)",
+    "payoff-lbl":"ΠΡΟΣΔΟΚΩΜΕΝΗ ΤΙΜΗ ΚΑΘΕ ΣΤΡΑΤΗΓΙΚΗΣ",
+    "penNote":p=>p===0?`⚠️ <b style="color:#ef4444">Έτσι βαθμολογούνται σχεδόν ΟΛΑ τα benchmarks σήμερα</b> (MMLU, GPQA, SimpleQA). Λάθος = 0. «Δεν ξέρω» = 0. <b>Ίδια ποινή.</b>`:`Το λάθος τιμωρείται με −${p}. Η αποχή («δεν ξέρω») παίρνει πάντα <b>0</b>.`,
+    "pay-guess":"ΜΑΝΤΕΨΕ","pay-abstain":"ΔΕΝ ΞΕΡΩ","pay-thresh":"ΚΑΤΩΦΛΙ",
+    "strategyFn":(guess,abstain,pen,thresh)=>{
+      if(guess>abstain) return {txt:`✅ Βέλτιστη στρατηγική: <b>ΠΑΝΤΑ ΜΑΝΤΕΨΕ</b>${pen===0?' — η ειλικρίνεια δεν ανταμείβεται ποτέ':''}`,color:'#ef4444',bg:'#ef444415'};
+      if(guess<abstain) return {txt:`🤐 Βέλτιστη στρατηγική: <b>ΠΕΣ «ΔΕΝ ΞΕΡΩ»</b> — η μαντεψιά κοστίζει περισσότερο απ' όσο αποδίδει`,color:'#10b981',bg:'#10b98115'};
+      return {txt:`⚖️ <b>Ισορροπία</b> — το μοντέλο είναι αδιάφορο ανάμεσα στις δύο επιλογές`,color:'#f59e0b',bg:'#f59e0b15'};
+    },
+    "labMath":(p,pen,guess)=>`<div class="cbox-title">ΤΑ ΜΑΘΗΜΑΤΙΚΑ</div>
+<div style="color:var(--text);line-height:2">
+E[<b style="color:#ef4444">μαντεψιά</b>] = p × (+1) + (1−p) × (−${pen})<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ${p.toFixed(2)} × 1 + ${(1-p).toFixed(2)} × (−${pen}) = <b style="color:${guess>0?'#ef4444':'#10b981'}">${guess.toFixed(2)}</b><br>
+E[<b style="color:#10b981">δεν ξέρω</b>] = <b>0</b> &nbsp;<span style="color:var(--muted);font-size:9px">(πάντα)</span>
+</div>`,
+    "labInsight":pen=>pen===0?`<strong>⚠️ ΤΟ ΣΥΜΠΕΡΑΣΜΑ:</strong> Όταν η ποινή είναι 0, η μαντεψιά έχει <strong>πάντα</strong> θετική προσδοκώμενη τιμή — ακόμα και με 5% σιγουριά. Το μοντέλο δεν είναι ανέντιμο. Είναι <strong>ορθολογικό</strong>.<br><br>Στο SimpleQA benchmark, το <b>o4-mini</b> βγαίνει μπροστά από το <b>GPT-5-mini</b> σε accuracy — <strong>παρότι έχει πάνω από 3/4 error rate</strong>. Γιατί; Επειδή μαντεύει σε όλα, ενώ το GPT-5-mini απέχει όταν δεν ξέρει.<br><br><strong style="color:#fca5a5">Το πιο ειλικρινές μοντέλο φαίνεται χειρότερο.</strong>`:`<strong>✅ ΜΕ ΠΟΙΝΗ −${pen}:</strong> Τώρα το μοντέλο έχει λόγο να απέχει όταν δεν είναι σίγουρο. Το κατώφλι σιγουριάς πάνω από το οποίο συμφέρει να απαντήσει είναι <b>${(pen/(pen+1)*100).toFixed(0)}%</b>.<br><br>Αυτό ακριβώς προτείνει το OpenAI paper: <strong>ρητή ποινή για λάθος, μηδενική ποινή για αποχή</strong> — και να δηλώνεται στο prompt.`,
+
+    "calib-intro":`<strong>📌 Calibration (Βαθμονόμηση):</strong> Ένα μοντέλο είναι <em>calibrated</em> όταν λέει «80% σίγουρος» και έχει δίκιο <strong>ακριβώς 80%</strong> των φορών. Η <strong>διαγώνιος</strong> είναι η τελειότητα. Οι κουκκίδες <strong>κάτω</strong> από τη γραμμή σημαίνουν <strong>overconfidence</strong>.`,
+    "tog-llm":"🤖 Τυπικό LLM (RLHF)",
+    "tog-cal":"✅ Calibrated μοντέλο",
+    "ece-lbls":["ECE","ΚΑΤΑΣΤΑΣΗ","ΕΜΠΙΣΤΟΣΥΝΗ"],
+    "calibExplain":m=>m==='llm'?`<div class="cbox-title">ΤΙ ΒΛΕΠΕΙΣ</div><div style="line-height:1.9">Όλες οι κουκκίδες είναι <b style="color:#ef4444">κάτω</b> από τη διαγώνιο. Όταν το μοντέλο λέει <b>«95% σίγουρος»</b>, έχει δίκιο μόνο <b>74%</b>.<br><br><b style="color:var(--text)">Γιατί;</b> Το RLHF. Τα reward models που εκπαιδεύουν το μοντέλο έχουν <b>εγγενή προκατάληψη υπέρ των υψηλών confidence scores</b> — ανεξαρτήτως της πραγματικής ποιότητας της απάντησης.<br><br>Αν δύο απαντήσεις είναι εξίσου σωστές αλλά η μία ακούγεται πιο σίγουρη, το reward model <b>προτιμά τη σίγουρη</b>. Άρα το μοντέλο μαθαίνει: <em>ακούγομαι σίγουρος = παίρνω καλύτερη βαθμολογία</em>.<div class="src">Πηγή: Leng, Huang, Zhu & Huang — <i>Taming Overconfidence in LLMs: Reward Calibration in RLHF</i>, ICLR 2025</div></div>`:`<div class="cbox-title">ΤΙ ΒΛΕΠΕΙΣ</div><div style="line-height:1.9">Οι κουκκίδες πέφτουν <b style="color:#10b981">πάνω στη διαγώνιο</b>. Όταν λέει «90% σίγουρος», έχει δίκιο <b>89%</b>.<br><br><b style="color:var(--text)">Είναι εφικτό;</b> Ναι — τα <b>PPO-M</b> και <b>PPO-C</b> (ICLR 2025) μειώνουν το ECE <b>χωρίς</b> να θυσιάζουν την ακρίβεια.<br><br><b style="color:var(--c4)">Και το πιο αντι-διαισθητικό εύρημα:</b> είναι <b>ευκολότερο</b> για ένα <b>μικρό</b> μοντέλο να ξέρει τα όριά του. Το calibration απαιτεί <b>λιγότερο</b> υπολογισμό από την ακρίβεια.<br><br>Δηλαδή: το να ξέρεις τι δεν ξέρεις είναι <b>ευκολότερο</b> από το να ξέρεις. <b style="color:var(--text)">Απλά δεν το ζητήσαμε ποτέ.</b></div>`,
+
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "footer-sub":"Βασισμένο στο βιβλίο «ΔΕΝ ΞΕΡΩ»",
+  },
+  en:{
+    "h-sup":"THE BIGGEST PROBLEM IN AI",
+    "h-title":`It's not that it doesn't know.<br><span style="color:var(--c2)">It's that it doesn't know it doesn't know.</span>`,
+    "h-sub":"Why language models guess instead of saying \"I don't know\"",
+    "t1":"The Quiz","t2":"Incentives","t3":"Calibration","t4":"Philosophy",
+    "quiz-intro":`<strong>📌 The Experiment:</strong> Five questions. Some have answers — some are <strong>traps</strong> about things that <strong>do not exist</strong>. The model answers <strong>every time</strong>, with a confidence bar. Read the answer, guess whether it's real, then hit "Reveal".<br><br><span style="color:var(--muted);font-size:10px">Answers are representations of typical LLM behaviour (simulated, not a live API) — to demonstrate the phenomenon under controlled conditions.</span>`,
+    "reveal":"🔍 Reveal",
+    "conf-label":"Confidence",
+    "answer-label":"MODEL'S ANSWER",
+    "q-num":n=>`QUESTION ${n}/5`,
+    "score-lbl":"RESULT",
+    "score-fn":(traps,avgT,avgR)=>`<b style="color:var(--red)">${traps} out of 5 were traps.</b><br><br>Average confidence on <span style="color:var(--red)">fabricated</span> answers: <b>${avgT}%</b><br>Average confidence on <span style="color:var(--c5)">correct</span> answers: <b>${avgR}%</b><br><br><b style="color:var(--c4)">Difference: ${Math.abs(avgR-avgT).toFixed(1)} points.</b><br><span style="color:var(--muted);font-size:10px">Confidence tells you nothing about truth.</span>`,
+
+    "lab-intro":`<strong>📌 This is the heart of the problem.</strong> The model <em>can</em> say "I don't know" — the phrase exists in its vocabulary. The issue is that <strong>it doesn't pay</strong>. Move the sliders and watch how the <strong>penalty for being wrong</strong> changes the optimal strategy.`,
+    "pen-lbl":"Penalty for a wrong answer",
+    "conf-lbl":"How confident the model is (p)",
+    "payoff-lbl":"EXPECTED VALUE OF EACH STRATEGY",
+    "penNote":p=>p===0?`⚠️ <b style="color:#ef4444">This is how almost ALL benchmarks score today</b> (MMLU, GPQA, SimpleQA). Wrong = 0. "I don't know" = 0. <b>Same penalty.</b>`:`A wrong answer costs −${p}. Abstaining ("I don't know") always scores <b>0</b>.`,
+    "pay-guess":"GUESS","pay-abstain":"ABSTAIN","pay-thresh":"THRESHOLD",
+    "strategyFn":(guess,abstain,pen,thresh)=>{
+      if(guess>abstain) return {txt:`✅ Optimal strategy: <b>ALWAYS GUESS</b>${pen===0?' — honesty is never rewarded':''}`,color:'#ef4444',bg:'#ef444415'};
+      if(guess<abstain) return {txt:`🤐 Optimal strategy: <b>SAY "I DON'T KNOW"</b> — guessing costs more than it returns`,color:'#10b981',bg:'#10b98115'};
+      return {txt:`⚖️ <b>Break-even</b> — the model is indifferent between the two`,color:'#f59e0b',bg:'#f59e0b15'};
+    },
+    "labMath":(p,pen,guess)=>`<div class="cbox-title">THE MATHEMATICS</div>
+<div style="color:var(--text);line-height:2">
+E[<b style="color:#ef4444">guess</b>] = p × (+1) + (1−p) × (−${pen})<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = ${p.toFixed(2)} × 1 + ${(1-p).toFixed(2)} × (−${pen}) = <b style="color:${guess>0?'#ef4444':'#10b981'}">${guess.toFixed(2)}</b><br>
+E[<b style="color:#10b981">abstain</b>] = <b>0</b> &nbsp;<span style="color:var(--muted);font-size:9px">(always)</span>
+</div>`,
+    "labInsight":pen=>pen===0?`<strong>⚠️ THE CONCLUSION:</strong> When the penalty is 0, guessing <strong>always</strong> has positive expected value — even at 5% confidence. The model is not dishonest. It is <strong>rational</strong>.<br><br>On the SimpleQA benchmark, <b>o4-mini</b> beats <b>GPT-5-mini</b> on accuracy — <strong>despite having over a 3/4 error rate</strong>. Why? Because it guesses at everything, while GPT-5-mini abstains when it doesn't know.<br><br><strong style="color:#fca5a5">The more honest model looks worse.</strong>`:`<strong>✅ WITH PENALTY −${pen}:</strong> Now the model has a reason to abstain when unsure. The confidence threshold above which answering pays off is <b>${(pen/(pen+1)*100).toFixed(0)}%</b>.<br><br>This is exactly what the OpenAI paper proposes: <strong>explicit penalty for errors, zero penalty for abstention</strong> — stated in the prompt.`,
+
+    "calib-intro":`<strong>📌 Calibration:</strong> A model is <em>calibrated</em> when it says "80% confident" and is right <strong>exactly 80%</strong> of the time. The <strong>diagonal</strong> is perfection. Dots <strong>below</strong> the line mean <strong>overconfidence</strong>.`,
+    "tog-llm":"🤖 Typical LLM (RLHF)",
+    "tog-cal":"✅ Calibrated model",
+    "ece-lbls":["ECE","STATUS","TRUST"],
+    "calibExplain":m=>m==='llm'?`<div class="cbox-title">WHAT YOU'RE SEEING</div><div style="line-height:1.9">Every dot sits <b style="color:#ef4444">below</b> the diagonal. When the model says <b>"95% confident"</b>, it is right only <b>74%</b> of the time.<br><br><b style="color:var(--text)">Why?</b> RLHF. The reward models that train it have an <b>inherent bias toward high confidence scores</b> — regardless of the actual quality of the response.<br><br>If two answers are equally correct but one sounds more confident, the reward model <b>prefers the confident one</b>. So the model learns: <em>sounding sure = better score</em>.<div class="src">Source: Leng, Huang, Zhu & Huang — <i>Taming Overconfidence in LLMs: Reward Calibration in RLHF</i>, ICLR 2025</div></div>`:`<div class="cbox-title">WHAT YOU'RE SEEING</div><div style="line-height:1.9">The dots sit <b style="color:#10b981">on the diagonal</b>. When it says "90% confident", it is right <b>89%</b> of the time.<br><br><b style="color:var(--text)">Is it achievable?</b> Yes — <b>PPO-M</b> and <b>PPO-C</b> (ICLR 2025) reduce ECE <b>without</b> sacrificing accuracy.<br><br><b style="color:var(--c4)">And the most counter-intuitive finding:</b> it is <b>easier</b> for a <b>small</b> model to know its limits. Calibration requires <b>less</b> computation than accuracy.<br><br>In other words: knowing what you don't know is <b>easier</b> than knowing. <b style="color:var(--text)">We just never asked for it.</b></div>`,
+
+    "footer-txt":"Perikles Nikoules — MSc AI · University of Essex · 2025",
+    "footer-sub":"Based on the book «I DON'T KNOW»",
+  }
+};
+</script>
+<script>
+let lang='el';
+let revealed=[];
+let currentModel='llm';
+
+// ══════════════════════════════════════════════
+// QUIZ RENDERING
+// ══════════════════════════════════════════════
+function renderQuiz(){
+  const t=T[lang];
+  document.getElementById('quiz-container').innerHTML=QUESTIONS.map((q,i)=>{
+    const isRev=revealed.includes(i);
+    const cls=isRev?(q.trap?'revealed-trap':'revealed-real'):'';
+    const barColor=q.conf>=85?'#ef4444':q.conf>=75?'#f59e0b':'#00d4ff';
+    return `<div class="q-card ${cls}">
+      <div class="q-num">${t['q-num'](i+1)}</div>
+      <div class="q-text">${lang==='el'?q.qEl:q.qEn}</div>
+      <div class="q-answer">
+        <div class="q-answer-label">${t['answer-label']}</div>
+        <div class="q-answer-text">${lang==='el'?q.aEl:q.aEn}</div>
+      </div>
+      <div class="conf-row">
+        <div class="conf-label">${t['conf-label']}</div>
+        <div class="conf-track"><div class="conf-fill" style="width:${q.conf}%;background:${barColor}">${q.conf}%</div></div>
+      </div>
+      ${isRev?'':`<button class="reveal-btn" onclick="reveal(${i})">${t.reveal}</button>`}
+      <div class="verdict ${q.trap?'trap':'real'} ${isRev?'show':''}">${lang==='el'?q.vEl:q.vEn}</div>
+    </div>`;
+  }).join('');
+  updateScore();
+}
+function reveal(i){
+  if(!revealed.includes(i)) revealed.push(i);
+  renderQuiz();
+}
+function updateScore(){
+  const panel=document.getElementById('score-panel');
+  if(revealed.length<QUESTIONS.length){panel.style.display='none';return;}
+  const t=T[lang];
+  const traps=QUESTIONS.filter(q=>q.trap);
+  const reals=QUESTIONS.filter(q=>!q.trap);
+  const avgT=(traps.reduce((s,q)=>s+q.conf,0)/traps.length);
+  const avgR=(reals.reduce((s,q)=>s+q.conf,0)/reals.length);
+  panel.style.display='block';
+  document.getElementById('score-big').textContent=`${traps.length}/5`;
+  document.getElementById('score-text').innerHTML=t['score-fn'](traps.length,avgT.toFixed(1),avgR.toFixed(1));
+}
+
+// ══════════════════════════════════════════════
+// INCENTIVE LAB
+// ══════════════════════════════════════════════
+function updateLab(){
+  const t=T[lang];
+  const pen=+document.getElementById('pen-slider').value;
+  const p=+document.getElementById('conf-slider').value/100;
+  document.getElementById('pen-val').textContent=pen===0?'0':`−${pen}`;
+  document.getElementById('conf-val').textContent=`${(p*100).toFixed(0)}%`;
+  document.getElementById('pen-note').innerHTML=t.penNote(pen);
+
+  const eGuess = p*1 + (1-p)*(-pen);
+  const eAbstain = 0;
+  const threshold = pen/(pen+1);
+
+  const guessWins = eGuess > eAbstain + 0.001;
+  const abstainWins = eAbstain > eGuess + 0.001;
+
+  document.getElementById('payoff-grid').innerHTML=`
+    <div class="pay-cell ${guessWins?'winner':''}">
+      <div class="pay-name">${t['pay-guess']}</div>
+      <div class="pay-val" style="color:${eGuess>0?'#ef4444':'#94a3b8'}">${eGuess>=0?'+':''}${eGuess.toFixed(2)}</div>
+      <div class="pay-sub">E[V]</div>
+    </div>
+    <div class="pay-cell ${abstainWins?'winner':''}">
+      <div class="pay-name">${t['pay-abstain']}</div>
+      <div class="pay-val" style="color:${abstainWins?'#10b981':'#94a3b8'}">0.00</div>
+      <div class="pay-sub">E[V]</div>
+    </div>
+    <div class="pay-cell">
+      <div class="pay-name">${t['pay-thresh']}</div>
+      <div class="pay-val" style="color:#f59e0b">${(threshold*100).toFixed(0)}%</div>
+      <div class="pay-sub">p*</div>
+    </div>`;
+
+  const s=t.strategyFn(eGuess,eAbstain,pen,threshold);
+  const banner=document.getElementById('strategy-banner');
+  banner.innerHTML=s.txt;
+  banner.style.color=s.color;
+  banner.style.background=s.bg;
+  banner.style.border=`1px solid ${s.color}44`;
+
+  document.getElementById('lab-math').innerHTML=t.labMath(p,pen,eGuess);
+  document.getElementById('lab-insight').innerHTML=t.labInsight(pen);
+}
+
+// ══════════════════════════════════════════════
+// CALIBRATION CHART
+// ══════════════════════════════════════════════
+function setModel(m){
+  currentModel=m;
+  document.getElementById('tog-llm').classList.toggle('active',m==='llm');
+  document.getElementById('tog-cal').classList.toggle('active',m==='cal');
+  drawCalib();
+  document.getElementById('calib-explain').innerHTML=T[lang].calibExplain(m);
+  renderECE();
+}
+function renderECE(){
+  const t=T[lang];
+  const pts=CALIB[currentModel];
+  const ece=computeECE(pts);
+  const isGood=currentModel==='cal';
+  document.getElementById('ece-row').innerHTML=`
+    <div class="ece-card">
+      <div class="ece-lbl">${t['ece-lbls'][0]}</div>
+      <div class="ece-val" style="color:${isGood?'#10b981':'#ef4444'}">${(ece*100).toFixed(1)}%</div>
+    </div>
+    <div class="ece-card">
+      <div class="ece-lbl">${t['ece-lbls'][1]}</div>
+      <div class="ece-val" style="font-size:12px;color:${isGood?'#10b981':'#ef4444'}">${isGood?(lang==='el'?'ΒΑΘΜΟΝΟΜΗΜΕΝΟ':'CALIBRATED'):(lang==='el'?'OVERCONFIDENT':'OVERCONFIDENT')}</div>
+    </div>
+    <div class="ece-card">
+      <div class="ece-lbl">${t['ece-lbls'][2]}</div>
+      <div class="ece-val" style="color:${isGood?'#10b981':'#ef4444'}">${isGood?'✅':'⚠️'}</div>
+    </div>`;
+}
+function drawCalib(){
+  const cv=document.getElementById('calib-chart');if(!cv)return;
+  cv.width=cv.offsetWidth||620;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=44,padB=34,padT=14,padR=14;
+  const pw=W-pad-padR, ph=H-padB-padT;
+  const tx=v=>pad+v*pw;
+  const ty=v=>padT+(1-v)*ph;
+
+  // grid
+  ctx.strokeStyle='#1e2d4544';ctx.lineWidth=.5;
+  for(let i=0;i<=4;i++){
+    const v=i/4;
+    ctx.beginPath();ctx.moveTo(tx(v),padT);ctx.lineTo(tx(v),H-padB);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad,ty(v));ctx.lineTo(W-padR,ty(v));ctx.stroke();
+    ctx.fillStyle='#475569';ctx.font='9px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.fillText((v*100).toFixed(0)+'%',tx(v),H-padB+14);
+    ctx.textAlign='right';ctx.fillText((v*100).toFixed(0)+'%',pad-5,ty(v)+3);
+  }
+
+  // perfect diagonal
+  ctx.strokeStyle='#10b98188';ctx.lineWidth=2;ctx.setLineDash([6,5]);
+  ctx.beginPath();ctx.moveTo(tx(0),ty(0));ctx.lineTo(tx(1),ty(1));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#10b981';ctx.font='bold 9px IBM Plex Mono,monospace';ctx.textAlign='left';
+  ctx.save();
+  ctx.translate(tx(0.62),ty(0.66));ctx.rotate(-Math.atan2(ph,pw));
+  ctx.fillText(lang==='el'?'ΤΕΛΕΙΑ ΒΑΘΜΟΝΟΜΗΣΗ':'PERFECT CALIBRATION',0,-5);
+  ctx.restore();
+
+  // gap shading for LLM
+  const pts=CALIB[currentModel];
+  if(currentModel==='llm'){
+    ctx.fillStyle='#ef444418';
+    ctx.beginPath();
+    ctx.moveTo(tx(pts[0].stated),ty(pts[0].stated));
+    pts.forEach(p=>ctx.lineTo(tx(p.stated),ty(p.stated)));
+    for(let i=pts.length-1;i>=0;i--) ctx.lineTo(tx(pts[i].stated),ty(pts[i].actual));
+    ctx.closePath();ctx.fill();
+  }
+
+  // model curve
+  const col=currentModel==='cal'?'#10b981':'#ef4444';
+  ctx.strokeStyle=col;ctx.lineWidth=2.6;ctx.lineJoin='round';
+  ctx.beginPath();
+  pts.forEach((p,i)=>i===0?ctx.moveTo(tx(p.stated),ty(p.actual)):ctx.lineTo(tx(p.stated),ty(p.actual)));
+  ctx.stroke();
+  pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(tx(p.stated),ty(p.actual),5,0,6.28);
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='#07090f';ctx.lineWidth=1.5;ctx.stroke();
+  });
+
+  // gap arrow annotation for LLM
+  if(currentModel==='llm'){
+    const p=pts[5]; // 95% bin
+    ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(tx(p.stated),ty(p.stated));ctx.lineTo(tx(p.stated),ty(p.actual));ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#f59e0b';ctx.font='bold 9px IBM Plex Mono,monospace';ctx.textAlign='left';
+    ctx.fillText(lang==='el'?'← ΤΟ ΨΕΜΑ':'← THE LIE',tx(p.stated)+7,(ty(p.stated)+ty(p.actual))/2+3);
+  }
+
+  // axis titles
+  ctx.fillStyle='#94a3b8';ctx.font='bold 10px IBM Plex Mono,monospace';ctx.textAlign='center';
+  ctx.fillText(lang==='el'?'ΔΗΛΩΜΕΝΗ ΣΙΓΟΥΡΙΑ':'STATED CONFIDENCE',pad+pw/2,H-4);
+  ctx.save();ctx.translate(11,padT+ph/2);ctx.rotate(-Math.PI/2);
+  ctx.fillText(lang==='el'?'ΠΡΑΓΜΑΤΙΚΗ ΑΚΡΙΒΕΙΑ':'ACTUAL ACCURACY',0,0);
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════
+// PHILOSOPHY
+// ══════════════════════════════════════════════
+function renderPhil(){
+  const isEl=lang==='el';
+  const cards=[
+    {hex:'#00d4ff',icon:'?',
+     tEl:'Σωκράτης — Η Γνώση των Ορίων',tEn:'Socrates — Knowing the Limits',
+     qEl:'«ἓν οἶδα ὅτι οὐδὲν οἶδα»',qEn:'"I know one thing: that I know nothing"',
+     xEl:'Ο Σωκράτης δεν ήταν ταπεινός από ευγένεια. Ήταν ταπεινός γιατί το θεωρούσε <b>επιστημολογικά σωστό</b>. Η γνώση των ορίων σου <b>είναι μορφή γνώσης</b> — ίσως η ανώτερη.<br><br>Αυτό ακριβώς λείπει από τα σημερινά μοντέλα: όχι η γνώση, αλλά η <b>γνώση της άγνοιας</b>.',
+     xEn:'Socrates was not humble out of politeness. He was humble because he considered it <b>epistemologically correct</b>. Knowing your limits <b>is a form of knowledge</b> — perhaps the highest.<br><br>This is exactly what today\'s models lack: not knowledge, but <b>knowledge of ignorance</b>.'},
+    {hex:'#f59e0b',icon:'📉',
+     tEl:'Dunning-Kruger — Δομικό, όχι Ανθρώπινο',tEn:'Dunning-Kruger — Structural, not Human',
+     qEl:'«Όσο λιγότερα ξέρεις, τόσο λιγότερο βλέπεις τα κενά σου»',qEn:'"The less you know, the less you can see your gaps"',
+     xEl:'Το Dunning-Kruger <b>δεν είναι ανθρώπινο ελάττωμα</b>. Είναι <b>δομικό</b>: για να αντιληφθείς ένα κενό, χρειάζεσαι ήδη τη γνώση που σου λείπει.<br><br>Ισχύει για τον άνθρωπο. Ισχύει και για τη μηχανή. <b>Και το AI το κάνει σε βιομηχανική κλίμακα.</b>',
+     xEn:'Dunning-Kruger is <b>not a human flaw</b>. It is <b>structural</b>: to perceive a gap, you already need the knowledge you lack.<br><br>It holds for humans. It holds for machines. <b>And AI does it at industrial scale.</b>'},
+    {hex:'#7c3aed',icon:'⚖️',
+     tEl:'Το Ανοιχτό Ερώτημα — Δύο Στρατόπεδα',tEn:'The Open Question — Two Camps',
+     qEl:'«Ξέρουν πραγματικά τι δεν ξέρουν;»',qEn:'"Do they really know what they don\'t know?"',
+     xEl:'<b style="color:#10b981">Camp A</b> — <i>Orgad et al. (2024)</i>: οι εσωτερικές αναπαραστάσεις των LLMs <b>κωδικοποιούν</b> πληροφορία για την αληθοφάνεια. Υπάρχει σήμα — αλλά δεν γενικεύει μεταξύ datasets.<br><br><b style="color:#ef4444">Camp B</b> — <i>Cheang et al. (2025)</i>: οι εσωτερικές καταστάσεις κωδικοποιούν μόνο <b>μοτίβα ανάκλησης γνώσης</b>, όχι αληθοφάνεια. Όταν το μοντέλο θυμάται ένα γεγονός και όταν κατασκευάζει ένα ψεύτικο, οι διαδικασίες είναι <b>μηχανιστικά ίδιες</b>.<br><br><b style="color:var(--c4)">Είναι ενεργή διαμάχη — όχι λυμένο ζήτημα.</b>',
+     xEn:'<b style="color:#10b981">Camp A</b> — <i>Orgad et al. (2024)</i>: LLM internal representations <b>do encode</b> truthfulness information. There is signal — but it doesn\'t generalise across datasets.<br><br><b style="color:#ef4444">Camp B</b> — <i>Cheang et al. (2025)</i>: internal states encode only <b>knowledge-recall patterns</b>, not truthfulness. When the model recalls a fact and when it fabricates one, the processes are <b>mechanistically identical</b>.<br><br><b style="color:var(--c4)">This is an active dispute — not a settled question.</b>'},
+    {hex:'#ff6b35',icon:'🪞',
+     tEl:'Ο Καθρέφτης — Η Θέση',tEn:'The Mirror — The Thesis',
+     qEl:'«Το εκπαιδεύσαμε πάνω στα κείμενά μας»',qEn:'"We trained it on our own writing"',
+     xEl:'Όταν ένα μοντέλο λέει «δεν είμαι σίγουρος», <b>δεν μέτρησε</b> την αβεβαιότητά του. Έμαθε ότι σε παρόμοιες ερωτήσεις οι άνθρωποι <b>βαθμολογούν καλύτερα</b> την επιφύλαξη.<br><br>Είναι <b>μίμηση ταπεινότητας</b> — όχι ταπεινότητα.<br><br><b style="color:var(--text)">Δεν φτιάξαμε μηχανή που ψεύδεται. Φτιάξαμε μηχανή που φοβάται να πει «δεν ξέρω» — ακριβώς όπως εμείς.</b>',
+     xEn:'When a model says "I\'m not sure", it <b>did not measure</b> its uncertainty. It learned that on similar questions humans <b>score hedging more favourably</b>.<br><br>It is <b>simulated humility</b> — not humility.<br><br><b style="color:var(--text)">We did not build a machine that lies. We built a machine that is afraid to say "I don\'t know" — exactly like us.</b>'},
+  ];
+
+  const isElL=isEl;
+  document.getElementById('phil-container').innerHTML=`
+    <div class="panel" style="border-color:#7c3aed33">
+      <div class="plbl" style="color:#a78bfa">${isEl?'Η ΚΕΝΤΡΙΚΗ ΘΕΣΗ':'THE CENTRAL THESIS'}</div>
+      <p style="color:var(--sub);font-size:12px;line-height:1.9">
+        ${isEl?`Το μοντέλο <b style="color:var(--text)">μπορεί</b> να πει «δεν ξέρω». Το εκπαιδεύσαμε να μην το λέει — γιατί τα benchmarks μας <b style="color:var(--c2)">τιμωρούν την ειλικρίνεια και ανταμείβουν τη μαντεψιά</b>.<br><br>Δεν είναι σφάλμα της αρχιτεκτονικής. Είναι <b style="color:var(--text)">σφάλμα των αξιών μας</b>.`
+        :`The model <b style="color:var(--text)">can</b> say "I don't know". We trained it not to — because our benchmarks <b style="color:var(--c2)">punish honesty and reward guessing</b>.<br><br>It is not an architectural failure. It is a <b style="color:var(--text)">failure of our values</b>.`}
+      </p>
+    </div>
+    ${cards.map(c=>`
+      <div class="pcrd" style="border:1px solid ${c.hex}33">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="pico" style="background:${c.hex}18;color:${c.hex}">${c.icon}</div>
+          <div style="color:${c.hex};font-size:12px;font-weight:900">${isEl?c.tEl:c.tEn}</div>
+        </div>
+        <div class="pquote" style="border-left:3px solid ${c.hex}">${isEl?c.qEl:c.qEn}</div>
+        <div style="color:var(--sub);font-size:11px;line-height:1.8">${isEl?c.xEl:c.xEn}</div>
+      </div>`).join('')}
+
+    <div class="panel" style="border-color:#10b98144">
+      <div class="plbl" style="color:#10b981">${isEl?'ΤΙ ΠΡΟΤΕΙΝΕΙ Η ΕΡΕΥΝΑ':'WHAT THE RESEARCH PROPOSES'}</div>
+      <div class="cbox">
+        <div class="cbox-title">${isEl?'1. ΑΛΛΑΓΗ ΤΩΝ BENCHMARKS':'1. CHANGE THE BENCHMARKS'}</div>
+        <div style="line-height:1.8;color:var(--sub)">${isEl?'Ρητή ποινή για λάθος, <b>μηδενική</b> για αποχή. Και η ποινή να <b>δηλώνεται στο prompt</b>:<br><i style="color:var(--muted)">«Απάντησε μόνο αν είσαι >75% σίγουρος. Λάθος = −2, σωστό = +1, "δεν ξέρω" = 0.»</i><br><br>Και να ενσωματωθεί στα <b>κύρια</b> benchmarks (MMLU, GPQA, SWE-bench) — όχι σε ξεχωριστά hallucination tests.':'Explicit penalty for errors, <b>zero</b> for abstention. And the penalty must be <b>stated in the prompt</b>:<br><i style="color:var(--muted)">"Answer only if >75% confident. Wrong = −2, right = +1, "I don\'t know" = 0."</i><br><br>And it must be built into the <b>main</b> benchmarks (MMLU, GPQA, SWE-bench) — not separate hallucination tests.'}</div>
+      </div>
+      <div class="cbox">
+        <div class="cbox-title">${isEl?'2. CALIBRATED REWARD MODELING':'2. CALIBRATED REWARD MODELING'}</div>
+        <div style="line-height:1.8;color:var(--sub)">${isEl?'<b>PPO-M</b> και <b>PPO-C</b> (ICLR 2025) — ευθυγραμμίζουν τα confidence levels με την πραγματική ποιότητα. Μειώνουν το ECE <b>χωρίς</b> να θυσιάζουν την ακρίβεια.':'<b>PPO-M</b> and <b>PPO-C</b> (ICLR 2025) — align confidence levels with actual quality. They reduce ECE <b>without</b> sacrificing accuracy.'}</div>
+      </div>
+      <div class="cbox" style="border-left:3px solid var(--red)">
+        <div class="cbox-title">${isEl?'3. ΤΙ ΔΕΝ ΑΡΚΕΙ':'3. WHAT IS NOT ENOUGH'}</div>
+        <div style="line-height:1.9;color:var(--sub)">
+          ${isEl?'<b>RAG</b> → μειώνει, δεν λύνει. Το μοντέλο ακόμα δεν ξέρει τα όριά του.<br><b>Prompt engineering</b> → πρακτικά άχρηστο για αυτό.<br><b>Scaling</b> → δεν το λύνει. Κάποιες ερωτήσεις είναι <b>εγγενώς αναπάντητες</b>.':'<b>RAG</b> → reduces, does not solve. The model still doesn\'t know its limits.<br><b>Prompt engineering</b> → practically useless here.<br><b>Scaling</b> → doesn\'t solve it. Some questions are <b>inherently unanswerable</b>.'}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="border-color:#f59e0b44">
+      <div class="plbl" style="color:#f59e0b">${isEl?'ΤΟ ΕΡΩΤΗΜΑ':'THE QUESTION'}</div>
+      <p style="color:var(--sub);font-size:12px;line-height:1.9">
+        ${isEl?'Χτίζουμε συστήματα που θα πάρουν αποφάσεις για <b style="color:var(--text)">ιατρικές διαγνώσεις</b>, <b style="color:var(--text)">δικαστικές υποθέσεις</b>, <b style="color:var(--text)">στρατιωτικούς στόχους</b>.<br><br>Το ερώτημα δεν είναι «πόσο έξυπνα είναι;»':'We are building systems that will make decisions about <b style="color:var(--text)">medical diagnoses</b>, <b style="color:var(--text)">legal cases</b>, <b style="color:var(--text)">military targets</b>.<br><br>The question is not "how intelligent are they?"'}
+      </p>
+      <div style="background:#f59e0b11;border-radius:8px;padding:13px;margin-top:10px;text-align:center">
+        <div style="font-size:15px;font-weight:900;color:#fcd34d;line-height:1.6">${isEl?'Ξέρουν πότε να σωπάσουν;':'Do they know when to stay silent?'}</div>
+      </div>
+      <p style="color:var(--muted);font-size:11px;line-height:1.8;margin-top:10px;text-align:center;font-style:italic">
+        ${isEl?'Και ίσως — αν καταφέρουμε να τους το μάθουμε — θυμηθούμε κι εμείς πώς να το κάνουμε.':'And perhaps — if we manage to teach them — we might remember how to do it ourselves.'}
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="plbl" style="color:var(--muted)">${isEl?'ΠΗΓΕΣ':'SOURCES'}</div>
+      <div class="src" style="margin-top:0">
+        <b>1.</b> Kalai, Nachum, Vempala & Zhang (2025) — <i>Why Language Models Hallucinate</i>. arXiv:2509.04664 → <b>Nature</b><br>
+        <b>2.</b> Leng, Huang, Zhu & Huang (2025) — <i>Taming Overconfidence in LLMs: Reward Calibration in RLHF</i>. <b>ICLR 2025</b>, arXiv:2410.09724<br>
+        <b>3.</b> Orgad et al. (2024) — <i>LLMs Know More Than They Show</i>. arXiv:2410.02707<br>
+        <b>4.</b> Cheang, Chan, Zhang & Deng (2025) — <i>Do LLMs Really Know What They Don't Know?</i> arXiv:2510.09033<br>
+        <b>5.</b> Guo et al. (2017) — <i>On Calibration of Modern Neural Networks</i>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// LANG + TABS
+// ══════════════════════════════════════════════
+function setLang(l){
+  lang=l;
+  document.getElementById('btn-el').classList.toggle('active',l==='el');
+  document.getElementById('btn-en').classList.toggle('active',l==='en');
+  const t=T[l];
+  for(const[id,v]of Object.entries(t)){
+    if(typeof v==='string'){const el=document.getElementById(id);if(el)el.innerHTML=v;}
+  }
+  document.getElementById('tog-llm').textContent=t['tog-llm'];
+  document.getElementById('tog-cal').textContent=t['tog-cal'];
+  renderQuiz();updateLab();renderPhil();
+  drawCalib();renderECE();
+  document.getElementById('calib-explain').innerHTML=t.calibExplain(currentModel);
+}
+function setTab(id){
+  ['quiz','lab','calib','phil'].forEach(x=>{
+    document.getElementById('content-'+x).classList.toggle('active',x===id);
+    document.getElementById('tab-'+x).classList.toggle('active',x===id);
+  });
+  if(id==='calib') setTimeout(()=>{drawCalib();renderECE();},50);
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+document.getElementById('tog-llm').textContent=T[lang]['tog-llm'];
+document.getElementById('tog-cal').textContent=T[lang]['tog-cal'];
+renderQuiz();
+updateLab();
+renderPhil();
+document.getElementById('calib-explain').innerHTML=T[lang].calibExplain('llm');
+window.addEventListener('resize',()=>{
+  if(document.getElementById('content-calib').classList.contains('active')) drawCalib();
+});
+</script>
+</body>
+</html>
