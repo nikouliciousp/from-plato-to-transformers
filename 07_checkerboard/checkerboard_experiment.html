@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Πώς χτίζεται ένα νευρωνικό δίκτυο — Σκακιέρα</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07090f; --panel:#111827; --panel2:#0d1424; --line:#1f2b45;
+    --txt:#e8eefc; --soft:#aab7d6; --muted:#7386ad; --dim:#4a5a80;
+    --cyan:#00d4ff; --orange:#ff6b35; --purple:#7c3aed; --green:#10b981; --amber:#f59e0b;
+    --pos:#22c55e; --neg:#dc2626;
+    --mono:'IBM Plex Mono','DejaVu Sans Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--txt);font-family:var(--mono);line-height:1.6;font-size:15px;
+    -webkit-font-smoothing:antialiased;padding:clamp(12px,3vw,28px);
+    padding-top:calc(clamp(12px,3vw,28px)+env(safe-area-inset-top,0px));
+    background-image:radial-gradient(900px 500px at 85% -10%,rgba(124,58,237,.10),transparent 60%),
+                     radial-gradient(700px 500px at -5% 110%,rgba(0,212,255,.07),transparent 55%);}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .tag{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--amber);font-weight:600}
+  h1{font-size:clamp(21px,4.6vw,32px);font-weight:700;letter-spacing:-.01em;line-height:1.1;margin:8px 0 4px}
+  h1 .g{color:var(--cyan)} h1 .a{color:var(--orange)}
+  .sub{color:var(--soft);font-size:clamp(12.5px,2vw,14.5px);max-width:64ch}
+  .lang{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+  .lang button{background:none;border:0;color:var(--muted);font:inherit;font-weight:600;font-size:12px;padding:7px 14px;cursor:pointer}
+  .lang button.on{background:var(--cyan);color:#04121a}
+
+  .goal{background:linear-gradient(180deg,rgba(0,212,255,0.06),rgba(0,212,255,0.02));
+    border:1px solid rgba(0,212,255,0.28);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .goal .tt{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:6px}
+  .goal p{font-size:13.5px;color:var(--soft);line-height:1.6}
+
+  .stage{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:14px}
+  .pcap{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:9px}
+  .pcap.a{color:var(--cyan)} .pcap.b{color:var(--orange)}
+  canvas{display:block;width:100%;background:#05080f;border:1px solid var(--line);border-radius:10px}
+  #plane{aspect-ratio:1/1} #graph{aspect-ratio:1/1}
+
+  .narr{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px;min-height:150px}
+  .narr .st{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .narr h2{font-size:17px;font-weight:700;color:#fff;margin:6px 0 7px}
+  .narr p{color:var(--soft);font-size:14px;line-height:1.62}
+
+  .ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .pill{background:var(--panel2);border:1px solid var(--line);color:var(--soft);font:inherit;font-weight:600;font-size:13px;padding:9px 14px;border-radius:9px;cursor:pointer}
+  .pill.play{background:var(--green);border-color:var(--green);color:#03130d}
+  .pill:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .dots{display:flex;gap:7px;flex-wrap:wrap;margin-left:auto}
+  .dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);cursor:pointer;padding:0}
+  .dot.on{background:var(--cyan);border-color:var(--cyan)}
+  .dot.done{background:var(--dim)}
+
+  .takeaway{margin-top:18px;padding:16px 18px;border:1px dashed var(--line);border-radius:12px;background:rgba(255,155,61,0.04)}
+  .takeaway .tt{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:8px}
+  .takeaway p{font-size:13.5px;color:var(--soft);margin:6px 0}
+
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:11.5px;text-align:center}
+  @media(max-width:640px){ .stage{grid-template-columns:1fr} .dots{margin-left:0;width:100%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="tag">From Plato to Transformers</div>
+      <h1 id="h1"></h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="lang-el" class="on">ΕΛ</button><button id="lang-en">EN</button>
+    </div>
+  </header>
+
+  <div class="goal">
+    <div class="tt" id="goal-t"></div>
+    <p id="goal-p"></p>
+  </div>
+
+  <div class="stage">
+    <div class="panel">
+      <div class="pcap a" id="cap-plane"></div>
+      <canvas id="plane"></canvas>
+    </div>
+    <div class="panel">
+      <div class="pcap b" id="cap-graph"></div>
+      <canvas id="graph"></canvas>
+    </div>
+  </div>
+
+  <div class="narr">
+    <div class="st" id="n-step"></div>
+    <h2 id="n-title"></h2>
+    <p id="n-text"></p>
+  </div>
+
+  <div class="ctrls">
+    <button class="pill play" id="play"></button>
+    <button class="pill" id="prev">◀</button>
+    <button class="pill" id="next">▶</button>
+    <button class="pill" id="restart">↻</button>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="takeaway">
+    <div class="tt" id="take-t"></div>
+    <p id="take-p1"></p>
+    <p id="take-p2"></p>
+    <p id="take-p3"></p>
+    <p id="take-p4"></p>
+  </div>
+
+  <div class="foot">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+const T={
+ el:{
+  h1:['Πώς χτίζεται ένα ','νευρωνικό δίκτυο'], sub:'Παράδειγμα σκακιέρας 4×4. Μαθηματική και γεωμετρική διαίσθηση για το πόσους κόμβους και πόσα επίπεδα χρειάζεσαι.',
+  goalT:'Ο στόχος αυτού του δημοσιεύματος',
+  goalP:'Να δώσει σε κάθε μηχανικό ΑΙ μια οπτική διαίσθηση για δύο ερωτήματα που έρχονται πρώτα σε κάθε πρόβλημα ταξινόμησης. Πόσοι νευρώνες σε κάθε επίπεδο. Πόσα επίπεδα βάθος. Το παράδειγμα εδώ είναι μια σκακιέρα 4×4 στο επίπεδο, από τα πιο διδακτικά προβλήματα γιατί δεν λύνεται με ένα κρυφό επίπεδο σε ανθρώπινο μέγεθος.',
+  capPlane:'Το scatter plot του δείγματος', capGraph:'Το νευρωνικό δίκτυο που χτίζουμε',
+  step:'Βήμα', play:'⏸ Παύση', playP:'▶ Αναπαραγωγή',
+  posLbl:'Positive patterns', negLbl:'Negative patterns',
+  layIn:'Είσοδος', layHid:'Κρυφό', layOut:'Έξοδος', widthLbl:'Πλάτος', depthLbl:'Βάθος',
+  takeT:'Τι δηλώνει ο κάθε κόμβος και τι το βάθος',
+  takeP1:'Κάθε νευρώνας ενός κρυφού επιπέδου είναι μία ευθεία τομή. Οι νευρώνες του πρώτου επιπέδου τραβούν ευθείες πάνω στο αρχικό scatter plot που βλέπουμε. Ο αριθμός των κόμβων ισούται με τον αριθμό των ευθειών που χρειάζεσαι για να κόψεις τα δεδομένα σε ομοιογενείς περιοχές.',
+  takeP2:'Και τα βαθύτερα κρυφά επίπεδα τραβούν ευθείες, όχι όμως στο αρχικό scatter plot. Τις τραβούν στον χώρο των εννοιών που τους δίνει το προηγούμενο επίπεδο. Στο αρχικό scatter plot αυτές οι ευθείες φαίνονται ως καμπύλες ή σύνθετα πολύγωνα, γι αυτό λέμε ότι το βάθος δεν κόβει τα αρχικά δεδομένα, συνδυάζει τα αποτελέσματα των προηγούμενων επιπέδων σε έννοιες υψηλότερου επιπέδου.',
+  takeP3:'Πρακτικός κανόνας για αρχική εκτίμηση αρχιτεκτονικής. Πόσες ευθείες περίπου χρειάζομαι στον αρχικό χώρο, αυτό είναι το πλάτος του πρώτου επιπέδου. Αν οι περιοχές πρέπει να συνδυαστούν με λογικούς κανόνες όπως ίδιες ή διαφορετικές, χρειάζομαι δεύτερο επίπεδο. Αν οι κανόνες γίνονται φωλιασμένοι, όπως το parity πολλαπλών τιμών, χρειάζομαι είτε αρκετά μεγαλύτερο δεύτερο επίπεδο είτε και τρίτο.',
+  takeP4:'Ειλικρινής σημείωση για το παράδειγμά μας. Το δίκτυο 2 - 6 - 2 - 1 που δείχνουμε εδώ είναι διδακτική απλοποίηση. Στην πράξη, ένα εκπαιδεύσιμο δίκτυο για σκακιέρα 4x4 συνήθως χρειάζεται περισσότερους νευρώνες στο δεύτερο επίπεδο ή και τρίτο κρυφό επίπεδο, γιατί το parity τεσσάρων τιμών είναι δύσκολο πρόβλημα από μόνο του. Ο σκοπός εδώ είναι να δει κανείς με μία ματιά την αρχή, όχι το ελάχιστο εκπαιδεύσιμο μέγεθος.',
+  steps:[
+   {t:'Το δείγμα μας', x:'Αυτό είναι το scatter plot του δείγματός μας. Πενήντα σημεία σε ένα τετράγωνο [0,1] × [0,1]. Κάθε σημείο έχει δύο συντεταγμένες, το x1 και το x2, και μια ταμπέλα, θετικό ή αρνητικό. Τα σημεία εναλλάσσονται σε δεκαέξι κ��λιά σαν σκακιέρα 4×4.'},
+   {t:'Ο στόχος', x:'Θέλουμε έναν αλγόριθμο που, δίνοντάς του τις συντεταγμένες ενός νέου σημείου, θα μας λέει αν είναι θετικό ή αρνητικό. Δηλαδή θέλουμε να ανακαλύψουμε τον κανόνα που παράγει τη σκακιέρα.'},
+   {t:'Δύο είσοδοι', x:'Επειδή κάθε σημείο περιγράφεται από δύο αριθμούς, x1 και x2, το δίκτυο ξεκινάει με δύο νευρώνες εισόδου. Αυτοί δεν κάνουν υπολογισμό, μόνο περνάνε τις τιμές μέσα στο δίκτυο. Στον γράφο δίπλα δεν έχουν εικονίτσα, γιατί δεν κόβουν τίποτα ακόμα.'},
+   {t:'Πρώτη κάθετη ευθεία', x:'Ας ξεκινήσουμε τραβώντας μία κάθετη ευθεία στο x1 = 0,25. Ένας νευρώνας εμφανίζεται στο πρώτο κρυφό επίπεδο. Δίπλα του βλέπεις τη μικρή εικονίτσα scatter που δείχνει τι βλέπει αυτός ο νευρώνας, μία γραμμή που χωρίζει το τετράγωνο.'},
+   {t:'Δεύτερη κάθετη ευθεία', x:'Δεύτερη κάθετη ευθεία στο x1 = 0,5. Δεύτερος νευρώνας. Η δική του εικονίτσα δείχνει τη δική του γραμμή, όχι όλες μαζί. Κάθε νευρώνας βλέπει μόνο τη δική του ευθεία.'},
+   {t:'Τρίτη κάθετη ευθεία', x:'Τρίτη κάθετη ευθεία στο x1 = 0,75. Τρίτος νευρώνας με τη δική του εικονίτσα. Τώρα, αν συνδυάσουμε νοητικά και τους τρεις, μπορούμε να πούμε σε ποια από τις τέσσερις στήλες βρίσκεται κάθε σημείο.'},
+   {t:'Πρώτη οριζόντια ευθεία', x:'Ξεκινάμε τις οριζόντιες. Πρώτη οριζόντια ευθεία στο x2 = 0,25. Τέταρτος νευρώνας. Η εικονίτσα του δείχνει μία μόνη οριζόντια γραμμή στο δικό του scatter plot.'},
+   {t:'Δεύτερη οριζόντια ευθεία', x:'Δεύτερη οριζόντια ευθεία στο x2 = 0,5. Πέμπτος νευρώνας.'},
+   {t:'Τρίτη οριζόντια ευθεία', x:'Τρίτη οριζόντια ευθεία στο x2 = 0,75. Έκτος νευρώνας. Έξι νευρώνες συνολικά στο πρώτο κρυφό επίπεδο. Ο καθένας τους βλέπει μία δική του γραμμή στο scatter plot.'},
+   {t:'Ώρα για βάθος', x:'Οι έξι γραμμές μόνες τους δεν χρωματίζουν τη σκακιέρα, μας λένε απλώς σε ποια στήλη και σε ποια γραμμή είναι κάθε σημείο. Χρειαζόμαστε κάποιον που θα συνδυάσει αυτές τις δύο πληροφορίες. Αυτός ο κάποιος είναι ένα δεύτερο κρυφό επίπεδο.'},
+   {t:'Δεύτερο κρυφό επίπεδο', x:'Προσθέτουμε δύο νευρώνες σε δεύτερο κρυφό επίπεδο. Οι νευρώνες αυτοί δεν βλέπουν το αρχικό scatter plot, βλέπουν τις εξόδους του προηγούμενου επιπέδου. Τραβούν κι αυτοί ευθείες, όχι όμως στο αρχικό x1, x2. Τις τραβούν στον χώρο των έξι φετών που παρήγαγε το πρώτο επίπεδο. Ο στόχος τους είναι να κωδικοποιήσουν την πληροφορία στήλης και γραμμής σε πιο συμπυκνωμένη μορφή, ώστε η έξοδος να μπορεί να αποφασίσει.'},
+   {t:'Ο νευρώνας εξόδου', x:'Ο τελευταίος νευρώνας είναι η έξοδος. Παίρνει τα δύο parity και τα συγκρίνει. Αν είναι ίδια βάφει κόκκινο, αν είναι διαφορετικά μπλε. Στην εικονίτσα του βλέπεις πια πώς χρωματίζεται όλη η σκακιέρα.'},
+   {t:'Έτοιμη η σκακιέρα', x:'Η τελική δομή του δικτύου είναι 2 - 6 - 2 - 1. Πλάτος έξι, βάθος δύο. Έξι ευθείες κόβουν τα δεδομένα σε ομοιογενείς φέτες, δύο νευρώνες υψηλότερου επιπέδου τις συνδυάζουν σε parity, ένας νευρώνας βγάζει την τελική απόφαση. Αυτό είναι όλο το θέμα του πλάτους και του βάθους σε ένα παράδειγμα.'}
+  ]
+ },
+ en:{
+  h1:['How a ','neural network',' is built'], sub:'A 4×4 checkerboard example. Mathematical and geometric intuition for how many nodes and how many layers you need.',
+  goalT:'The goal of this post',
+  goalP:'To give every AI engineer a visual intuition for two questions that come first in every classification problem. How many neurons per layer. How many layers of depth. The example here is a 4×4 checkerboard in the plane, one of the most instructive problems because it cannot be solved by one hidden layer of human size.',
+  capPlane:'Scatter plot of the sample', capGraph:'The neural network we are building',
+  step:'Step', play:'⏸ Pause', playP:'▶ Play',
+  posLbl:'Positive patterns', negLbl:'Negative patterns',
+  layIn:'Input', layHid:'Hidden', layOut:'Output', widthLbl:'Width', depthLbl:'Depth',
+  takeT:'What each node stands for, and what depth stands for',
+  takeP1:'Each neuron in a hidden layer is one straight cut. The neurons of the first layer draw lines on the original scatter plot that we see. The number of nodes equals the number of lines you need to cut the data into homogeneous regions.',
+  takeP2:'Deeper hidden layers also draw lines, but not on the original scatter plot. They draw them in the concept space that the previous layer gives them. On the original scatter plot these lines appear as curves or complex polygons, which is why we say that depth does not cut the raw data, it combines the outputs of the previous layers into higher-level concepts.',
+  takeP3:'A practical rule for an initial architecture estimate. How many lines do I need in the original space — that is the width of the first layer. If the regions must be combined with logical rules like same or different, I need a second layer. If the rules become nested, like parity over many values, I need either a much wider second layer or a third one.',
+  takeP4:'Honest note about our example. The 2 - 6 - 2 - 1 network shown here is a didactic simplification. In practice, a trainable network for a 4x4 checkerboard usually needs more neurons in the second layer or a third hidden layer, because parity over four values is a hard problem on its own. The purpose here is to see the principle at a glance, not the minimum trainable size.',
+  steps:[
+   {t:'Our sample', x:'This is the scatter plot of our sample. Fifty points in a [0,1] × [0,1] square. Each point has two coordinates, x1 and x2, and a label, positive or negative. The points alternate across sixteen cells like a 4×4 checkerboard.'},
+   {t:'The target', x:'We want an algorithm that, given the coordinates of a new point, tells us whether it is positive or negative. That is, we want to discover the rule that produces the checkerboard.'},
+   {t:'Two inputs', x:'Because each point is described by two numbers, x1 and x2, the network starts with two input neurons. These do not compute, they simply pass the values into the network. In the graph they have no thumbnail, because they are not cutting anything yet.'},
+   {t:'First vertical line', x:'Let us start by drawing one vertical line at x1 = 0.25. A neuron appears in the first hidden layer. Next to it you see a small scatter thumbnail that shows what this neuron sees, one line splitting the square.'},
+   {t:'Second vertical line', x:'A second vertical line at x1 = 0.5. A second neuron. Its thumbnail shows its own line, not all lines together. Each neuron only sees its own cut.'},
+   {t:'Third vertical line', x:'A third vertical line at x1 = 0.75. A third neuron with its own thumbnail. Now, if we combine the three mentally, we can say which of the four columns each point is in.'},
+   {t:'First horizontal line', x:'Now the horizontals. First horizontal line at x2 = 0.25. The fourth neuron. Its thumbnail shows a single horizontal cut on its own scatter plot.'},
+   {t:'Second horizontal line', x:'A second horizontal line at x2 = 0.5. The fifth neuron.'},
+   {t:'Third horizontal line', x:'A third horizontal line at x2 = 0.75. The sixth neuron. Six neurons in total in the first hidden layer. Each of them sees one line of its own on the scatter plot.'},
+   {t:'Time for depth', x:'The six lines by themselves do not paint the checkerboard, they only tell us which column and which row each point is in. We need someone to combine these two pieces of information. That someone is a second hidden layer.'},
+   {t:'Second hidden layer', x:'We add two neurons in a second hidden layer. These neurons do not see the original scatter plot, they see the outputs of the previous layer. They also draw lines, but not in the original x1, x2. They draw them in the space of the six stripes produced by the first layer. Their goal is to encode the column and row information in a more compact form so that the output can decide.'},
+   {t:'The output neuron', x:'The last neuron is the output. It takes the two parities and compares them. If they are the same it paints red, if they are different blue. Its thumbnail now shows how the whole checkerboard gets colored.'},
+   {t:'Checkerboard ready', x:'The final shape of the network is 2 - 6 - 2 - 1. Width six, depth two. Six lines cut the data into homogeneous stripes, two higher-level neurons combine them into parities, one neuron gives the final decision. That is the whole width-vs-depth story in one example.'}
+  ]
+ }
+};
+let lang='el';
+
+const S=[
+ {h1:0,h2:0,out:false,newNode:null,newLayer:null,finalPaint:false},
+ {h1:0,h2:0,out:false,newNode:null,newLayer:null,finalPaint:false},
+ {h1:0,h2:0,out:false,newNode:null,newLayer:null,finalPaint:false,hlIn:true},
+ {h1:1,h2:0,out:false,newNode:{l:1,i:0},newLayer:null,finalPaint:false},
+ {h1:2,h2:0,out:false,newNode:{l:1,i:1},newLayer:null,finalPaint:false},
+ {h1:3,h2:0,out:false,newNode:{l:1,i:2},newLayer:null,finalPaint:false},
+ {h1:4,h2:0,out:false,newNode:{l:1,i:3},newLayer:null,finalPaint:false},
+ {h1:5,h2:0,out:false,newNode:{l:1,i:4},newLayer:null,finalPaint:false},
+ {h1:6,h2:0,out:false,newNode:{l:1,i:5},newLayer:null,finalPaint:false},
+ {h1:6,h2:0,out:false,newNode:null,newLayer:null,finalPaint:false},
+ {h1:6,h2:2,out:false,newNode:null,newLayer:2,finalPaint:false},
+ {h1:6,h2:2,out:true, newNode:{l:3,i:0},newLayer:null,finalPaint:true,hlOut:true},
+ {h1:6,h2:2,out:true, newNode:null,newLayer:null,finalPaint:true}
+];
+const N=S.length;
+const NEURON_LINES=[
+  {ax:'v', c:0.25}, {ax:'v', c:0.50}, {ax:'v', c:0.75},
+  {ax:'h', c:0.25}, {ax:'h', c:0.50}, {ax:'h', c:0.75}
+];
+function sizesFor(s){ const a=[2]; if(s.h1>0)a.push(s.h1); if(s.h2>0)a.push(s.h2); if(s.out)a.push(1); return a; }
+let step=0, playing=true, stepStart=0;
+const STEP_MS=6500, INTRO_MS=1400;
+function setText(){
+  const d=T[lang];
+  $('h1').innerHTML = d.h1[0]+'<span class="g">'+d.h1[1]+'</span>'+(d.h1[2]||'');
+  $('sub').textContent=d.sub;
+  $('goal-t').textContent=d.goalT; $('goal-p').textContent=d.goalP;
+  $('cap-plane').textContent=d.capPlane; $('cap-graph').textContent=d.capGraph;
+  $('play').textContent=playing?d.play:d.playP;
+  const s=d.steps[step];
+  $('n-step').textContent=d.step+' '+(step+1)+'/'+N;
+  $('n-title').textContent=s.t; $('n-text').textContent=s.x;
+  $('take-t').textContent=d.takeT;
+  $('take-p1').textContent=d.takeP1; $('take-p2').textContent=d.takeP2; $('take-p3').textContent=d.takeP3; $('take-p4').textContent=d.takeP4;
+}
+function buildDots(){
+  const box=$('dots'); box.innerHTML='';
+  for(let i=0;i<N;i++){ const b=document.createElement('button');
+    b.className='dot'+(i===step?' on':i<step?' done':'');
+    b.onclick=()=>{step=i;stepStart=performance.now();refresh();}; box.appendChild(b);}
+}
+function refresh(){ setText(); buildDots(); }
+function setLang(l){lang=l;document.documentElement.lang=l;
+  $('lang-el').classList.toggle('on',l==='el');$('lang-en').classList.toggle('on',l==='en'); refresh();}
+$('lang-el').onclick=()=>setLang('el');$('lang-en').onclick=()=>setLang('en');
+$('play').onclick=()=>{playing=!playing; if(playing)stepStart=performance.now(); setText();};
+$('next').onclick=()=>{ if(step<N-1){step++;stepStart=performance.now();refresh();} };
+$('prev').onclick=()=>{ if(step>0){step--;stepStart=performance.now();refresh();} };
+$('restart').onclick=()=>{ step=0;stepStart=performance.now();playing=true;refresh(); };
+function fit(cv){const dpr=Math.min(2,window.devicePixelRatio||1);const r=cv.getBoundingClientRect();
+  const w=Math.max(1,Math.round(r.width)),h=Math.max(1,Math.round(r.height));
+  if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr;}
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w,h};}
+function ease(t){return t<0?0:t>1?1:t*t*(3-2*t);}
+const planeCv=$('plane'), graphCv=$('graph');
+const PTS=[]; (function(){ let seed=987654321;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  for(let ci=0;ci<4;ci++)for(let cj=0;cj<4;cj++){
+    const pos=(ci+cj)%2===0;
+    for(let k=0;k<3;k++){
+      const x=(ci+0.18+rnd()*0.64)/4;
+      const y=(cj+0.18+rnd()*0.64)/4;
+      PTS.push({x:x,y:y,pos:pos});
+    }
+  }
+})();
+function drawPlane(){
+  const {ctx,w,h}=fit(planeCv); ctx.clearRect(0,0,w,h);
+  const s=S[step], d=T[lang];
+  const padL=Math.max(40,w*0.10), padR=Math.max(12,w*0.03), padT=Math.max(30,h*0.07), padB=Math.max(30,h*0.09);
+  const pw=w-padL-padR, ph=h-padT-padB;
+  const X=x=>padL+x*pw, Y=y=>padT+(1-y)*ph;
+  if(s.finalPaint){
+    const gs=Math.max(6,Math.round(pw/50));
+    for(let px=0;px<pw;px+=gs)for(let py=0;py<ph;py+=gs){
+      const dx=px/pw, dy=1-py/ph;
+      const ci=Math.min(3,Math.floor(dx*4)), cj=Math.min(3,Math.floor(dy*4));
+      const red=(ci+cj)%2===0;
+      ctx.fillStyle=red?'rgba(220,38,38,0.12)':'rgba(34,197,94,0.10)';
+      ctx.fillRect(padL+px,padT+py,gs,gs);
+    }
+  }
+  ctx.strokeStyle='rgba(120,150,200,0.30)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(X(0.5),Y(0));ctx.lineTo(X(0.5),Y(1));ctx.stroke();
+  ctx.beginPath();ctx.moveTo(X(0),Y(0.5));ctx.lineTo(X(1),Y(0.5));ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(200,210,235,0.6)';ctx.lineWidth=1.2;ctx.strokeRect(X(0),Y(1),pw,ph);
+  ctx.fillStyle='#c7d2ec';ctx.font=Math.max(9,pw/34)+'px IBM Plex Mono,monospace';
+  ctx.textBaseline='top';ctx.textAlign='center';
+  ctx.fillText('0,0',X(0),Y(0)+6);ctx.fillText('0,5',X(0.5),Y(0)+6);ctx.fillText('1,0',X(1),Y(0)+6);
+  ctx.textBaseline='middle';ctx.textAlign='right';
+  ctx.fillText('0,0',X(0)-6,Y(0));ctx.fillText('0,5',X(0)-6,Y(0.5));ctx.fillText('1,0',X(0)-6,Y(1));
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillStyle='#e8eefc';ctx.font=Math.max(11,pw/26)+'px IBM Plex Mono,monospace';
+  ctx.fillText('x₁', X(0.5), h-16);
+  ctx.save();ctx.translate(14,padT+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('x₂',0,0);ctx.restore();
+  const intro=ease((performance.now()-stepStart)/INTRO_MS);
+  for(let k=0;k<s.h1;k++){
+    const line=NEURON_LINES[k];
+    const isNew = s.newNode && s.newNode.l===1 && s.newNode.i===k;
+    const prog = isNew?intro:1;
+    const col = line.ax==='v'?'#00d4ff':'#ff6b35';
+    ctx.strokeStyle=col; ctx.lineWidth=2.2;
+    if(line.ax==='v'){ctx.beginPath();ctx.moveTo(X(line.c),Y(0));ctx.lineTo(X(line.c),Y(prog));ctx.stroke();}
+    else {ctx.beginPath();ctx.moveTo(X(0),Y(line.c));ctx.lineTo(X(prog),Y(line.c));ctx.stroke();}
+  }
+  const rSym=Math.max(3.2,pw/58);
+  ctx.lineWidth=1.8;
+  for(const q of PTS){
+    const cx=X(q.x), cy=Y(q.y);
+    if(q.pos){
+      ctx.strokeStyle='rgba(34,197,94,0.95)';
+      ctx.beginPath();ctx.moveTo(cx-rSym,cy);ctx.lineTo(cx+rSym,cy);
+      ctx.moveTo(cx,cy-rSym);ctx.lineTo(cx,cy+rSym);ctx.stroke();
+    } else {
+      ctx.strokeStyle='rgba(220,38,38,0.95)';
+      ctx.beginPath();ctx.arc(cx,cy,rSym*0.85,0,7);ctx.stroke();
+    }
+  }
+  const lx=X(0.03), ly=Y(0.97), lw=Math.max(150,pw*0.42), lh=Math.max(46,ph*0.14);
+  ctx.fillStyle='rgba(15,23,42,0.85)';ctx.strokeStyle='rgba(200,210,235,0.6)';ctx.lineWidth=1;
+  ctx.fillRect(lx,ly,lw,lh);ctx.strokeRect(lx,ly,lw,lh);
+  ctx.font=Math.max(10,pw/40)+'px IBM Plex Mono,monospace';ctx.textBaseline='middle';ctx.textAlign='left';
+  const sx=lx+14, syA=ly+lh*0.32, syB=ly+lh*0.72;
+  ctx.strokeStyle='rgba(220,38,38,0.95)';ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.arc(sx,syA,5,0,7);ctx.stroke();
+  ctx.fillStyle='#e8eefc';ctx.fillText(d.negLbl,sx+14,syA);
+  ctx.strokeStyle='rgba(34,197,94,0.95)';
+  ctx.beginPath();ctx.moveTo(sx-5,syB);ctx.lineTo(sx+5,syB);ctx.moveTo(sx,syB-5);ctx.lineTo(sx,syB+5);ctx.stroke();
+  ctx.fillText(d.posLbl,sx+14,syB);
+}
+function drawMiniScatter(ctx, cx, cy, size, opts){
+  const half=size/2;
+  const x0=cx-half, y0=cy-half;
+  ctx.fillStyle='rgba(10,15,30,0.85)';
+  ctx.strokeStyle='rgba(200,210,235,0.5)';
+  ctx.lineWidth=0.8;
+  ctx.fillRect(x0,y0,size,size);
+  ctx.strokeRect(x0,y0,size,size);
+  const X=x=>x0+x*size, Y=y=>y0+(1-y)*size;
+  if(opts.parity){
+    const stripes=4;
+    for(let k=0;k<stripes;k++){
+      const on=(k%2===0);
+      ctx.fillStyle=on?'rgba(124,58,237,0.22)':'rgba(124,58,237,0.04)';
+      if(opts.parity==='col') ctx.fillRect(x0+(k/stripes)*size, y0, size/stripes, size);
+      else ctx.fillRect(x0, y0+((stripes-1-k)/stripes)*size, size, size/stripes);
+    }
+  }
+  if(opts.paint){
+    const gs=Math.max(2,size/12);
+    for(let px=0;px<size;px+=gs)for(let py=0;py<size;py+=gs){
+      const dx=px/size, dy=1-py/size;
+      const ci=Math.min(3,Math.floor(dx*4)), cj=Math.min(3,Math.floor(dy*4));
+      const red=(ci+cj)%2===0;
+      ctx.fillStyle=red?'rgba(220,38,38,0.16)':'rgba(34,197,94,0.14)';
+      ctx.fillRect(x0+px,y0+py,gs,gs);
+    }
+  }
+  const rSym=Math.max(0.9,size/40);
+  ctx.lineWidth=0.8;
+  for(const q of PTS){
+    const px=X(q.x), py=Y(q.y);
+    if(q.pos){
+      ctx.strokeStyle='rgba(34,197,94,0.85)';
+      ctx.beginPath();ctx.moveTo(px-rSym,py);ctx.lineTo(px+rSym,py);
+      ctx.moveTo(px,py-rSym);ctx.lineTo(px,py+rSym);ctx.stroke();
+    } else {
+      ctx.strokeStyle='rgba(220,38,38,0.85)';
+      ctx.beginPath();ctx.arc(px,py,rSym*0.85,0,7);ctx.stroke();
+    }
+  }
+  if(opts.line){
+    const L=opts.line;
+    ctx.strokeStyle=L.ax==='v'?'#00d4ff':'#ff6b35'; ctx.lineWidth=1.4;
+    if(L.ax==='v'){ctx.beginPath();ctx.moveTo(X(L.c),Y(0));ctx.lineTo(X(L.c),Y(1));ctx.stroke();}
+    else {ctx.beginPath();ctx.moveTo(X(0),Y(L.c));ctx.lineTo(X(1),Y(L.c));ctx.stroke();}
+  }
+}
+function drawGraph(){
+  const {ctx,w,h}=fit(graphCv); ctx.clearRect(0,0,w,h);
+  const s=S[step], sizes=sizesFor(s), L=sizes.length, d=T[lang];
+  const padX=Math.max(70,w*0.20), top=Math.max(30,h*0.11), bot=h-Math.max(58,h*0.22);
+  const colX=i=>padX+(L===1?0:i*(w-2*padX)/(L-1));
+  const maxN=Math.max.apply(null,sizes);
+  let r=Math.min(11,(bot-top)/Math.max(1,maxN-1)*0.32,(w-2*padX)/Math.max(1,L-1)*0.13); r=Math.max(4,r);
+  const pos=[];
+  for(let i=0;i<L;i++){const cnt=sizes[i],col=[],gap=cnt>1?(bot-top)/(cnt-1):0;
+    for(let j=0;j<cnt;j++)col.push({x:colX(i),y:cnt===1?(top+bot)/2:top+j*gap});pos.push(col);}
+  const intro=ease((performance.now()-stepStart)/INTRO_MS);
+  const isNewNode=(li,ni)=> s.newNode&&s.newNode.l===li&&s.newNode.i===ni;
+  const inNewLayer=(li)=> s.newLayer!=null&&li===s.newLayer;
+  const hlNode=(li)=> (s.hlIn&&li===0)||(s.hlOut&&li===L-1);
+  const pulse=0.5+0.5*Math.sin(performance.now()/320);
+  for(let i=0;i<L-1;i++)for(let a=0;a<sizes[i];a++)for(let b=0;b<sizes[i+1];b++){
+    const p0=pos[i][a],p1=pos[i+1][b];
+    ctx.strokeStyle='rgba(140,170,220,0.28)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+  }
+  if(L>=2){
+    const t=performance.now()/1000;
+    const dashLen=Math.max(8,r*1.6), dashGap=Math.max(6,r*1.2);
+    const offset=-(t*70)%(dashLen+dashGap);
+    for(let i=0;i<L-1;i++)for(let a=0;a<sizes[i];a++)for(let b=0;b<sizes[i+1];b++){
+      const p0=pos[i][a],p1=pos[i+1][b];
+      ctx.save();
+      ctx.setLineDash([dashLen,dashGap]);ctx.lineDashOffset=offset;
+      ctx.strokeStyle='rgba(190,245,255,0.55)';ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+      ctx.restore();
+    }
+  }
+  for(let i=0;i<L;i++)for(let j=0;j<sizes[i];j++){
+    const p=pos[i][j];
+    let base;
+    if(i===0) base='0,212,255';
+    else if(i===L-1&&s.out) base='16,185,129';
+    else if(i===1) base = j<3 ? '0,212,255' : '255,107,53';
+    else base='124,58,237';
+    const isN=isNewNode(i,j)||inNewLayer(i);
+    const grow=isN?ease(intro):1; const rr=r*(0.35+0.65*grow);
+    let glow=isN?grow:0; if(hlNode(i))glow=Math.max(glow,pulse);
+    ctx.beginPath();ctx.arc(p.x,p.y,rr,0,7);
+    ctx.fillStyle='rgba('+base+','+(0.6+glow*0.4)+')';ctx.fill();
+    ctx.lineWidth=1.3;ctx.strokeStyle='rgba(255,255,255,'+(0.22+glow*0.5)+')';ctx.stroke();
+  }
+  const thumbSize=Math.max(28, Math.min(46, (bot-top)/6.5));
+  const thumbGap=Math.max(10, r+8);
+  if(s.h1>0){
+    for(let j=0;j<s.h1;j++){
+      const p=pos[1][j];
+      const tx=p.x - thumbGap - thumbSize/2 - r;
+      const ty=p.y;
+      drawMiniScatter(ctx, tx, ty, thumbSize, {line:NEURON_LINES[j]});
+      ctx.strokeStyle='rgba(200,210,235,0.30)';ctx.lineWidth=0.8;
+      ctx.beginPath();ctx.moveTo(tx+thumbSize/2, ty);ctx.lineTo(p.x-r, p.y);ctx.stroke();
+    }
+  }
+  if(s.h2>0){
+    const hid2Idx = s.h1>0 ? 2 : 1;
+    for(let j=0;j<s.h2;j++){
+      const p=pos[hid2Idx][j];
+      const tx=p.x - thumbGap - thumbSize/2 - r;
+      const ty=p.y;
+      drawMiniScatter(ctx, tx, ty, thumbSize, {parity: j===0?'col':'row'});
+      ctx.strokeStyle='rgba(200,210,235,0.30)';ctx.lineWidth=0.8;
+      ctx.beginPath();ctx.moveTo(tx+thumbSize/2, ty);ctx.lineTo(p.x-r, p.y);ctx.stroke();
+    }
+  }
+  if(s.out && s.finalPaint){
+    const p=pos[L-1][0];
+    const tx=p.x + thumbGap + thumbSize/2 + r;
+    const ty=p.y;
+    drawMiniScatter(ctx, tx, ty, thumbSize, {paint:true});
+    ctx.strokeStyle='rgba(200,210,235,0.30)';ctx.lineWidth=0.8;
+    ctx.beginPath();ctx.moveTo(p.x+r, p.y);ctx.lineTo(tx-thumbSize/2, ty);ctx.stroke();
+  }
+  ctx.fillStyle='#c7d2ec';ctx.font=Math.max(10,r*0.95)+'px IBM Plex Mono,monospace';ctx.textBaseline='middle';
+  ctx.textAlign='right'; ctx.fillText('x₁',pos[0][0].x-r-5,pos[0][0].y); ctx.fillText('x₂',pos[0][1].x-r-5,pos[0][1].y);
+  if(s.out){ ctx.textAlign='left'; ctx.fillText('ŷ',pos[L-1][0].x+r+thumbGap+thumbSize+6,pos[L-1][0].y); }
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.font='10px IBM Plex Mono,monospace';
+  const capY = bot + Math.max(14, (h-bot)*0.35);
+  for(let i=0;i<L;i++){ const lab = i===0?d.layIn : (i===L-1&&s.out)?d.layOut : (d.layHid+' '+(i));
+    ctx.fillStyle = i===0 ? 'rgba(0,212,255,0.9)'
+                  : (i===L-1&&s.out) ? 'rgba(16,185,129,0.9)'
+                  : 'rgba(200,210,235,0.85)';
+    ctx.fillText(lab, colX(i), capY); }
+  if(step>=11 && sizes.length>=3){
+    ctx.strokeStyle='rgba(200,210,235,0.55)';ctx.fillStyle='rgba(200,210,235,0.85)';
+    ctx.lineWidth=1;
+    const y0=top-6, y1=bot+6, xA=Math.max(18, padX*0.22);
+    ctx.beginPath();ctx.moveTo(xA,y0+6);ctx.lineTo(xA,y1-6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xA,y0);ctx.lineTo(xA-4,y0+7);ctx.lineTo(xA+4,y0+7);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(xA,y1);ctx.lineTo(xA-4,y1-7);ctx.lineTo(xA+4,y1-7);ctx.closePath();ctx.fill();
+    ctx.save();ctx.translate(xA-12,(y0+y1)/2);ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText(d.widthLbl,0,0);ctx.restore();
+    const y=h-6, x0=colX(0), x1=colX(L-1);
+    ctx.beginPath();ctx.moveTo(x0+6,y-8);ctx.lineTo(x1-6,y-8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x0,y-8);ctx.lineTo(x0+7,y-12);ctx.lineTo(x0+7,y-4);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(x1,y-8);ctx.lineTo(x1-7,y-12);ctx.lineTo(x1-7,y-4);ctx.closePath();ctx.fill();
+    ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    ctx.fillStyle='rgba(15,23,42,0.9)';ctx.fillRect((x0+x1)/2-22,y-24,44,12);
+    ctx.fillStyle='rgba(200,210,235,0.9)';ctx.fillText(d.depthLbl,(x0+x1)/2,y-14);
+  }
+}
+function loop(){
+  drawPlane(); drawGraph();
+  if(playing && (performance.now()-stepStart)>STEP_MS){
+    if(step<N-1){ step++; stepStart=performance.now(); refresh(); }
+    else { playing=false; setText(); }
+  }
+  requestAnimationFrame(loop);
+}
+let rz;
+window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{drawPlane();drawGraph();},120);});
+stepStart=performance.now();
+setLang('el');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
