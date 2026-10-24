@@ -3,7 +3,7 @@
 
 [![Language](https://img.shields.io/badge/Language-EN_/_ΕΛ-7c3aed?style=for-the-badge)](#)
 [![MSc AI](https://img.shields.io/badge/MSc_AI-University_of_Essex-10b981?style=for-the-badge)](#)
-[![Tools](https://img.shields.io/badge/Interactive_Tools-7-00d4ff?style=for-the-badge)](#)
+[![Tools](https://img.shields.io/badge/Interactive_Tools-8-00d4ff?style=for-the-badge)](#)
 [![License](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](#)
 
 > *"The unexamined life is not worth living."* — Socrates
@@ -31,6 +31,7 @@ Each tool is a single self-contained HTML file: no installation, no dependencies
 | 5 | [**Δεν Ξέρω**](05_den_xero/) | Why AI doesn't know it doesn't know | Socrates |
 | 6 | [**Associationism**](06_associationism/) | Aristotle's 4 laws of memory → ML | Aristotle |
 | 7 | [**Checkerboard**](07_checkerboard/) | Why width and depth matter in neural networks | — |
+| 8 | [**CNN**](08_cnn/) | From pixels to the Idea: Convolutional Neural Networks | Plato |
 
 ### 1. 🧠 [Neurons Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/01_neurons/neurons_experiment.html)
 Three neuron types trained live. The **Divisive Neuron** corresponds to a real brain mechanism (Divisive Normalization) and the core of Transformer attention (`QKᵀ/√d`).
@@ -67,6 +68,11 @@ Demonstrates why width and depth matter in neural networks using a 4×4 checkerb
 
 **Folder:** [07_checkerboard/](07_checkerboard/)
 
+### 8. 🏛 [CNN Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/08_cnn/cnn_experiment.html)
+The digit "7" travels through a Convolutional Neural Network as the ascent from Plato's cave: pixels → edges → shapes → the Idea. Includes a Python app to test a trained MNIST model on your own hand-drawn digit.
+
+**Folder:** [08_cnn/](08_cnn/)
+
 ---
 
 ## 🎯 Who Is This For?
@@ -90,6 +96,7 @@ Every tool is one HTML file. Open it in any browser — that's it. No build step
 - [🤔 Δεν Ξέρω](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/05_den_xero/den_xero_experiment.html)
 - [🔗 Associationism](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/06_associationism/associationism_experiment.html)
 - [🧩 Checkerboard](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/07_checkerboard/checkerboard_experiment.html)
+- [🏛 CNN](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/08_cnn/cnn_experiment.html)
 
 For GitHub Pages: rename the file to `index.html` in its repository, then enable Pages (Settings → Pages → main → root).
 
@@ -105,6 +112,7 @@ Where claims could be checked, they were. Key references:
 - Kalai, Nachum, Vempala & Zhang (2025) — *Why Language Models Hallucinate* (OpenAI → Nature)
 - Leng et al. (2025) — *Taming Overconfidence in LLMs* (ICLR 2025)
 - Aristotle — *On Memory and Recollection* · Hebb (1949) · Chen et al. (2020, SimCLR) · Radford et al. (2021, CLIP)
+- Plato — *Republic* VII · LeCun, Bottou, Bengio & Haffner (1998) — CNNs & MNIST
 
 ---
 
@@ -143,6 +151,7 @@ MIT License — free to use, modify and share with attribution.
 | 5 | [**Δεν Ξέρω**](05_den_xero/) | Γιατί το AI δεν ξέρει ότι δεν ξέρει | Σωκράτης |
 | 6 | [**Associationism**](06_associationism/) | Οι 4 νόμοι μνήμης του Αριστοτέλη → ML | Αριστοτέλης |
 | 7 | [**Checkerboard**](07_checkerboard/) | Γιατί το πλάτος και το βάθος μετρούν στα νευρωνικά δίκτυα | — |
+| 8 | [**CNN**](08_cnn/) | Από τα pixels στην Ιδέα: Convolutional Neural Networks | Πλάτων |
 
 ### 1. 🧠 [Neurons Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/01_neurons/neurons_experiment.html)
 Τρεις τύποι νευρώνα εκπαιδεύονται ζωντανά. Ο **Divisive Neuron** αντιστοιχεί σε πραγματικό μηχανισμό του εγκεφάλου (Divisive Normalization) και στο κέντρο του Transformer attention (`QKᵀ/√d`).
@@ -179,6 +188,11 @@ Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο τ�
 
 **Φάκελος:** [07_checkerboard/](07_checkerboard/)
 
+### 8. 🏛 [CNN Experiment →](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/08_cnn/cnn_experiment.html)
+Το ψηφίο «7» ταξιδεύει μέσα σε ένα Convolutional Neural Network ως η άνοδος από το σπήλαιο του Πλάτωνα: pixels → ακμές → σχήματα → η Ιδέα. Περιλαμβάνει εφαρμογή Python για να δοκιμάσεις ένα εκπαιδευμένο μοντέλο MNIST στο δικό σου ζωγραφισμένο ψηφίο.
+
+**Φάκελος:** [08_cnn/](08_cnn/)
+
 ---
 
 ## 🎯 Για Ποιον Είναι;
@@ -202,6 +216,7 @@ Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο τ�
 - [🤔 Δεν Ξέρω](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/05_den_xero/den_xero_experiment.html)
 - [🔗 Associationism](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/06_associationism/associationism_experiment.html)
 - [🧩 Checkerboard](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/07_checkerboard/checkerboard_experiment.html)
+- [🏛 CNN](https://raw.githack.com/nikouliciousp/from-plato-to-transformers/main/08_cnn/cnn_experiment.html)
 
 Για GitHub Pages: μετονόμασε το αρχείο σε `index.html` στο repository του, μετά ενεργοποίησε το Pages (Settings → Pages → main → root).
 
@@ -217,6 +232,7 @@ Ablation study: ίδια αρχιτεκτονική, αλλάζει μόνο τ�
 - Kalai, Nachum, Vempala & Zhang (2025) — *Why Language Models Hallucinate* (OpenAI → Nature)
 - Leng et al. (2025) — *Taming Overconfidence in LLMs* (ICLR 2025)
 - Aristotle — *On Memory and Recollection* · Hebb (1949) · Chen et al. (2020, SimCLR) · Radford et al. (2021, CLIP)
+- Plato — *Republic* VII · LeCun, Bottou, Bengio & Haffner (1998) — CNNs & MNIST
 
 ---
 
