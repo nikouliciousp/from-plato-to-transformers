@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Από το Σπήλαιο στην Ιδέα — Convolutional Neural Networks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+  :root{
+    --bg:#07090f; --panel:#111827; --panel2:#0d1424; --line:#1f2b45;
+    --txt:#e8eefc; --soft:#aab7d6; --muted:#7386ad; --dim:#4a5a80;
+    --cyan:#00d4ff; --orange:#ff6b35; --purple:#7c3aed; --green:#10b981; --amber:#f59e0b; --red:#dc2626;
+    --mono:'IBM Plex Mono','DejaVu Sans Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--txt);font-family:var(--mono);line-height:1.6;font-size:15px;
+    -webkit-font-smoothing:antialiased;padding:clamp(12px,3vw,28px);
+    padding-top:calc(clamp(12px,3vw,28px)+env(safe-area-inset-top,0px));
+    background-image:radial-gradient(900px 500px at 85% -10%,rgba(124,58,237,.10),transparent 60%),
+                     radial-gradient(700px 500px at -5% 110%,rgba(0,212,255,.07),transparent 55%);}
+  .wrap{max-width:1000px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .tag{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--amber);font-weight:600}
+  h1{font-size:clamp(21px,4.6vw,32px);font-weight:700;letter-spacing:-.01em;line-height:1.1;margin:8px 0 4px}
+  h1 .g{color:var(--cyan)}
+  .sub{color:var(--soft);font-size:clamp(12.5px,2vw,14.5px);max-width:62ch}
+  .lang{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+  .lang button{background:none;border:0;color:var(--muted);font:inherit;font-weight:600;font-size:12px;padding:7px 14px;cursor:pointer}
+  .lang button.on{background:var(--cyan);color:#04121a}
+
+  .goal{background:linear-gradient(180deg,rgba(0,212,255,0.06),rgba(0,212,255,0.02));
+    border:1px solid rgba(0,212,255,0.28);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .goal .tt{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:6px}
+  .goal p{font-size:13.5px;color:var(--soft);line-height:1.6}
+  .goal .q{font-style:italic;color:var(--amber);margin-top:6px;font-size:12.5px}
+
+  .stage{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:6px}
+  .pcap{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:9px;color:var(--orange)}
+  canvas{display:block;width:100%;background:#05080f;border:1px solid var(--line);border-radius:10px}
+  #scene{aspect-ratio:16/10}
+
+  .narr{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-top:14px;min-height:120px}
+  .narr .st{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .narr h2{font-size:17px;font-weight:700;color:#fff;margin:4px 0 5px}
+  .narr .plato{color:var(--amber);font-style:italic;font-size:12.5px;margin-bottom:6px}
+  .narr p{color:var(--soft);font-size:14px;line-height:1.55}
+  .narr .math{margin-top:8px;padding:8px 12px;background:rgba(0,0,0,0.32);border-left:3px solid var(--amber);border-radius:4px;overflow-x:auto;font-size:15px;color:#fff;text-align:center}
+
+  .ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .pill{background:var(--panel2);border:1px solid var(--line);color:var(--soft);font:inherit;font-weight:600;font-size:13px;padding:9px 14px;border-radius:9px;cursor:pointer}
+  .pill.play{background:var(--green);border-color:var(--green);color:#03130d}
+  .pill:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .dots{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .dot{width:11px;height:11px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);cursor:pointer;padding:0}
+  .dot.on{background:var(--cyan);border-color:var(--cyan)}
+  .dot.done{background:var(--dim)}
+
+  .takeaway{margin-top:18px;padding:16px 18px;border:1px dashed var(--line);border-radius:12px;background:rgba(255,155,61,0.04)}
+  .takeaway .tt{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:8px}
+  .takeaway p{font-size:13.5px;color:var(--soft);margin:6px 0}
+  .takeaway .plato-note{color:var(--amber);font-style:italic;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+
+  .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:11.5px;text-align:center}
+  @media(max-width:640px){ .dots{margin-left:0;width:100%} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="tag">From Plato to Transformers</div>
+      <h1 id="h1"></h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="lang-el" class="on">ΕΛ</button><button id="lang-en">EN</button>
+    </div>
+  </header>
+
+  <div class="goal">
+    <div class="tt" id="goal-t"></div>
+    <p id="goal-p"></p>
+    <p class="q" id="goal-q"></p>
+  </div>
+
+  <div class="stage">
+    <div class="pcap" id="cap-scene"></div>
+    <canvas id="scene"></canvas>
+  </div>
+
+  <div class="narr">
+    <div class="st" id="n-step"></div>
+    <h2 id="n-title"></h2>
+    <div class="plato" id="n-plato"></div>
+    <p id="n-text"></p>
+    <div class="math" id="n-math"></div>
+  </div>
+
+  <div class="ctrls">
+    <button class="pill play" id="play"></button>
+    <button class="pill" id="prev">◀</button>
+    <button class="pill" id="next">▶</button>
+    <button class="pill" id="restart">↻</button>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="takeaway">
+    <div class="tt" id="take-t"></div>
+    <p id="take-p1"></p>
+    <p id="take-p2"></p>
+    <p id="take-p3"></p>
+    <p class="plato-note" id="take-plato"></p>
+  </div>
+
+  <div class="foot">Perikles Nikoules — MSc AI · University of Essex · 2025</div>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+const T={
+ el:{
+  h1:['Από το Σπήλαιο στην ','Ιδέα'], sub:'Convolutional Neural Networks. Το ψηφίο «7» ταξιδεύει μέσα από ένα CNN, από τα pixels μέχρι την αναγνώριση, βήμα βήμα.',
+  goalT:'Ο στόχος',
+  goalP:'Ακολουθούμε ένα και μόνο ψηφίο, το «7», από την είσοδο ως την έξοδο του CNN. Κάθε σκαλί δείχνει πώς το ίδιο ψηφίο μετασχηματίζεται, από pixels σε ακμές, σε patterns, στην Ιδέα του «7». Η αντιστοιχία με τον Πλάτωνα είναι ακριβής, όχι μεταφορά.',
+  goalQ:'«Ἡ παιδεία περιαγωγή ψυχῆς ἐστιν» — Πλάτων, Πολιτεία Ζ΄',
+  capScene:'Το «7» ταξιδεύει μέσα στο CNN',
+  step:'Σκαλί', play:'⏸ Παύση', playP:'▶ Αναπαραγωγή',
+  takeT:'Τι είναι τελικά ένα CNN',
+  takeP1:'Ένα Convolutional Neural Network είναι ένα νευρωνικό δίκτυο σχεδιασμένο ειδικά για εικόνες. Δουλεύει σε στρώματα, κάθε στρώμα εφαρμόζει μικρά φίλτρα 3×3 που γλιστρούν πάνω στην είσοδο και αναγνωρίζουν ένα μοτίβο. Τα πρώτα στρώματα βρίσκουν απλές ακμές, τα επόμενα τις συνδυάζουν σε γωνίες και σχήματα, ώσπου το τελευταίο αναγνωρίζει ολόκληρο το αντικείμενο. Αυτή η ιεραρχία είναι ο λόγος που το CNN καταλαβαίνει τι βλέπει.',
+  takeP2:'Τρεις αρχές το κάνουν να δουλεύει. Local connectivity, κάθε νευρώνας βλέπει μόνο μια μικρή γειτονιά της εικόνας, όχι ολόκληρη. Parameter sharing, το ίδιο φίλτρο εφαρμόζεται σε κάθε θέση, άρα αν μάθει να βρίσκει μια ακμή σε μία γωνία τη βρίσκει και παντού αλλού. Hierarchical features, κάθε στρώμα χτίζει πιο αφηρημένες έννοιες πάνω στις απλούστερες του προηγούμενου. Στο εργαλείο δείχνουμε τρία στρώματα για να φανεί η ιεραρχία, στην πράξη ένα σοβαρό CNN έχει δεκάδες στρώματα και εκατομμύρια παραμέτρους, η αρχή όμως παραμένει η ίδια.',
+  takeP3:'Η πράξη της συνέλιξης δεν είναι εφεύρεση των CNN. Υπάρχει στα μαθηματικά από τον 18ο αιώνα, στα έργα του d\'Alembert, του Euler, του Laplace. Είναι η βάση της επεξεργασίας σημάτων, της θεωρίας πιθανοτήτων, της οπτικής. Κάθε φακός κάνει συνέλιξη με την απόκριση σημείου του. Κάθε φίλτρο ήχου κάνει συνέλιξη με την κρουστική του απόκριση. Αυτό που αλλάζει στα CNN είναι ένα και μόνο, τα βάρη του φίλτρου δεν τα ορίζει ο μηχανικός εκ των προτέρων, τα μαθαίνει το μοντέλο μέσα από τα δεδομένα κατά την εκπαίδευση.',
+  takePlato:'Ο Πλάτωνας στην αλληγορία του σπηλαίου (Πολιτεία, βιβλίο Ζ΄) περιγράφει την ανθρώπινη γνώση ως σταδιακή άνοδο. Ο δεσμώτης βλέπει σκιές στον τοίχο του σπηλαίου και νομίζει ότι αυτές είναι η πραγματικότητα. Σταδιακά στρέφεται στο φως, διακρίνει πρώτα τα αντικείμενα που ρίχνουν τις σκιές, μετά τα πράγματα του κόσμου, στο τέλος τον ήλιο, την πηγή κάθε φωτός. Το CNN διαγράφει μαθηματικά την ίδια διαδρομή. Τα pixels αντιστοιχούν στις σκιές, οι ακμές στα πρώτα διακριτά σχήματα, τα parts στα αντικείμενα του αισθητού κόσμου, το αναγνωρισμένο ψηφίο στην Ιδέα. Η ιεραρχική αφαίρεση που ο Πλάτωνας περιέγραψε με λόγο, οι μηχανικοί την έγραψαν σε κώδικα 2400 χρόνια μετά. Δεν είναι μεταφορά, είναι η ίδια δομή με δύο ονόματα, μια φιλοσοφική και μια μαθηματική.',
+  steps:[
+   {t:'Οι σκιές, μόνο pixels',
+    p:'«ὁρῶσιν ἂν αὑτῶν σκιὰς»',
+    x:'Ο δεσμώτης βλέπει μόνο σκιές. Το CNN βλέπει μόνο αριθμούς, 28×28 = 784 τιμές φωτεινότητας. Καμία σημασία, μόνο ένταση φωτός.',
+    m:'I \\in \\mathbb{R}^{28 \\times 28}'},
+   {t:'Το φίλτρο σαρώνει',
+    p:'«καὶ ἐγγυτέρω τῶν ὄντων»',
+    x:'Ένα 3×3 kernel σαρώνει την εικόνα. Σε κάθε θέση πολλαπλασιάζει στοιχείο προς στοιχείο, αθροίζει, και γράφει μία τιμή στο feature map δεξιά. Βλέπεις ζωντανά πώς παράγεται η έξοδος.',
+    m:'(I * K)[i,j] = \\sum_{u,v} I[i+u,j+v] \\cdot K[u,v]'},
+   {t:'Πρώτο σκαλί, τρεις ακμές',
+    p:'«πρῶτον μὲν ῥᾷστα ἂν καθορῷ τὰς σκιάς»',
+    x:'Το πρώτο layer έχει πολλά φίλτρα, κάθε ένα βρίσκει διαφορετική ακμή. Εδώ δείχνουμε τρία, κάθετες, οριζόντιες, διαγώνιες ακμές. Κάθε feature map φωτίζει το αντίστοιχο κομμάτι του «7».',
+    m:'\\text{Layer 1 output: } 3 \\text{ feature maps}'},
+   {t:'Δεύτερο σκαλί, γωνίες και σχήματα',
+    p:'«ῥᾷον ἂν τὰ ἐν τῷ οὐρανῷ»',
+    x:'Το δεύτερο layer συνδυάζει τις ακμές του πρώτου. Μια κάθετη και μια οριζόντια ακμή που συναντιούνται δίνουν γωνία. Το δίκτυο αρχίζει να «βλέπει» μέρη του ψηφίου, όχι μεμονωμένες γραμμές.',
+    m:'\\text{Layer 2: edges} \\to \\text{corners, shapes}'},
+   {t:'Τρίτο σκαλί, η Ιδέα',
+    p:'«τελευταῖον δὴ οἶμαι τὸν ἥλιον»',
+    x:'Το τελευταίο layer είναι fully connected και παράγει 10 scores, ένα για κάθε ψηφίο 0-9. Softmax τα κάνει πιθανότητες. Ο νευρώνας «7» παίρνει τη μεγαλύτερη. Αυτή είναι η Ιδέα, η αναγνώριση.',
+    m:'\\hat{y} = \\text{softmax}(W \\cdot h + b)'},
+   {t:'Οι τρεις αρχές του CNN',
+    p:'«κατὰ λόγον, ὦ Γλαύκων»',
+    x:'Local connectivity, κάθε νευρώνας βλέπει μικρή γειτονιά. Parameter sharing, το ίδιο φίλτρο εφαρμόζεται παντού. Hierarchical features, από απλό σε σύνθετο. Μαζί εκμεταλλεύονται τη χωρική δομή της εικόνας.',
+    m:'\\text{CNN} = \\text{local} + \\text{shared} + \\text{hierarchical}'},
+   {t:'Η επιστροφή στο σπήλαιο',
+    p:'«καταβαίνειν παρ\' ἐκείνους τοὺς δεσμώτας»',
+    x:'Μόλις μάθει, το CNN μπορεί να γυρίσει στα pixels και να πει τι βλέπει. Αυτό ακριβώς κάνει το digit_tester, παίρνει τη ζωγραφιά σου και λέει «βλέπω ένα 7».',
+    m:'\\text{predict}(I) = \\text{argmax}_c \\, P(c | I)'}
+  ]
+ },
+ en:{
+  h1:['From the Cave to the ','Idea'], sub:'Convolutional Neural Networks. The digit "7" travels through a CNN, from pixels to recognition, step by step.',
+  goalT:'The goal',
+  goalP:'We follow one single digit, the "7", from input to output of a CNN. Each rung shows how the same digit is transformed, from pixels to edges, to patterns, to the Idea of "7". The mapping to Plato is precise, not metaphorical.',
+  goalQ:'"Education is a turning of the soul" — Plato, Republic VII',
+  capScene:'The "7" travels through the CNN',
+  step:'Rung', play:'⏸ Pause', playP:'▶ Play',
+  takeT:'What a CNN really is',
+  takeP1:'A Convolutional Neural Network is a neural network specifically designed for images. It works in layers, each layer applying small 3×3 filters that slide over the input and recognise a pattern. The first layers find simple edges, the next ones combine them into corners and shapes, until the final one recognises the whole object. This hierarchy is why a CNN understands what it sees.',
+  takeP2:'Three principles make it work. Local connectivity, each neuron sees only a small neighbourhood of the image, not the whole thing. Parameter sharing, the same filter is applied at every position, so if it learns to detect an edge in one corner it detects it everywhere else too. Hierarchical features, each layer builds more abstract concepts on top of simpler ones from the previous. In the tool we show three layers to make the hierarchy visible, in practice a serious CNN has dozens of layers and millions of parameters, but the principle remains the same.',
+  takeP3:'Convolution as an operation was not invented by CNNs. It has existed in mathematics since the 18th century, in the works of d\'Alembert, Euler, Laplace. It is the foundation of signal processing, probability theory, optics. Every lens convolves with its point-spread function. Every audio filter convolves with its impulse response. What changes in CNNs is only one thing, the weights of the filter are not fixed in advance by the engineer, the model learns them from data during training.',
+  takePlato:'Plato in the allegory of the cave (Republic, book VII) describes human knowledge as a gradual ascent. The prisoner sees shadows on the cave wall and thinks they are reality. Gradually he turns toward the light, first distinguishes the objects that cast the shadows, then the things of the world, finally the sun, the source of all light. The CNN traces the same path mathematically. Pixels correspond to the shadows, edges to the first distinct shapes, parts to the objects of the sensible world, the recognised digit to the Idea. The hierarchical abstraction that Plato described in words, engineers wrote in code 2400 years later. It is not a metaphor, it is the same structure under two names, one philosophical and one mathematical.',
+  steps:[
+   {t:'The shadows, only pixels',
+    p:'"they see only their shadows"',
+    x:'The prisoner sees only shadows. The CNN sees only numbers, 28×28 = 784 brightness values. No meaning, only light intensity.',
+    m:'I \\in \\mathbb{R}^{28 \\times 28}'},
+   {t:'The filter sweeps',
+    p:'"closer to the beings"',
+    x:'A 3×3 kernel sweeps the image. At each position it multiplies element-wise, sums, and writes one value to the feature map on the right. You see the output being produced live.',
+    m:'(I * K)[i,j] = \\sum_{u,v} I[i+u,j+v] \\cdot K[u,v]'},
+   {t:'First rung, three edges',
+    p:'"first he would see the shadows most easily"',
+    x:'The first layer has many filters, each finds a different edge. Here we show three, vertical, horizontal, diagonal edges. Each feature map lights up the matching part of the "7".',
+    m:'\\text{Layer 1 output: } 3 \\text{ feature maps}'},
+   {t:'Second rung, corners and shapes',
+    p:'"more easily the things in the heavens"',
+    x:'The second layer combines the edges of the first. A vertical and a horizontal edge meeting form a corner. The network starts to see parts of the digit, not isolated lines.',
+    m:'\\text{Layer 2: edges} \\to \\text{corners, shapes}'},
+   {t:'Third rung, the Idea',
+    p:'"last of all, I suppose, the sun itself"',
+    x:'The final layer is fully connected and produces 10 scores, one per digit 0-9. Softmax turns them into probabilities. The "7" neuron gets the largest. This is the Idea, the recognition.',
+    m:'\\hat{y} = \\text{softmax}(W \\cdot h + b)'},
+   {t:'The three principles of CNN',
+    p:'"reasonably, Glaucon"',
+    x:'Local connectivity, each neuron sees a small neighbourhood. Parameter sharing, the same filter everywhere. Hierarchical features, simple to complex. Together they exploit the spatial structure of images.',
+    m:'\\text{CNN} = \\text{local} + \\text{shared} + \\text{hierarchical}'},
+   {t:'The return to the cave',
+    p:'"going down to those prisoners"',
+    x:'Once the CNN has learned, it can return to the pixels and say what it sees. That is exactly what digit_tester does, it takes your drawing and says "I see a 7".',
+    m:'\\text{predict}(I) = \\text{argmax}_c \\, P(c | I)'}
+  ]
+ }
+};
+let lang='el';
+
+/* Scene configs */
+const S=[
+ {phase:'pixels'},     // 0 - 28x28 pixels only
+ {phase:'convolve'},   // 1 - kernel sweep + live feature map
+ {phase:'edges'},      // 2 - three feature maps (edges)
+ {phase:'shapes'},     // 3 - layer 2 output
+ {phase:'idea'},       // 4 - 10 output neurons, 7 wins
+ {phase:'principles'}, // 5 - three principles
+ {phase:'return'}      // 6 - digit tester
+];
+const N=S.length;
+
+let step=0, playing=false, stepStart=0;
+const STEP_MS=14000;
+const CONVOLVE_MS=6500;
+
+/* Synthetic 28x28 digit "7" */
+const DIGIT_7=(function(){
+  const g=Array.from({length:28},()=>new Array(28).fill(0));
+  // Top horizontal bar (thick)
+  for(let x=5;x<23;x++) for(let y=5;y<8;y++) g[y][x]=1;
+  // Diagonal line down-left
+  for(let i=0;i<19;i++){
+    const x=Math.round(22-i*0.75);
+    const y=8+i;
+    if(y<27 && x>=0 && x<28){
+      g[y][x]=1;
+      if(x+1<28) g[y][x+1]=1;
+      if(y+1<28) g[y+1][x]=0.5;
+    }
+  }
+  // Small horizontal crossbar
+  for(let x=10;x<17;x++) for(let y=15;y<17;y++) g[y][x]=1;
+  return g;
+})();
+
+/* Pre-compute feature maps for the "7" with three edge detectors.
+   This runs once at page load — the maps are deterministic. */
+function convolve(img, kernel){
+  const H=img.length, W=img[0].length;
+  const kh=kernel.length, kw=kernel[0].length;
+  const oh=H-kh+1, ow=W-kw+1;
+  const out=Array.from({length:oh},()=>new Array(ow).fill(0));
+  for(let y=0;y<oh;y++){
+    for(let x=0;x<ow;x++){
+      let s=0;
+      for(let v=0;v<kh;v++) for(let u=0;u<kw;u++){
+        s += img[y+v][x+u]*kernel[v][u];
+      }
+      out[y][x]=Math.max(0,s); // ReLU
+    }
+  }
+  return out;
+}
+const K_VERT=[[-1,0,1],[-1,0,1],[-1,0,1]];      // vertical edge
+const K_HORIZ=[[-1,-1,-1],[0,0,0],[1,1,1]];     // horizontal edge
+const K_DIAG=[[0,1,1],[-1,0,1],[-1,-1,0]];      // diagonal edge
+const FM_VERT=convolve(DIGIT_7, K_VERT);
+const FM_HORIZ=convolve(DIGIT_7, K_HORIZ);
+const FM_DIAG=convolve(DIGIT_7, K_DIAG);
+
+/* Layer 2: combine the three feature maps with another conv
+   (illustrative only) - a simple max of blurred versions */
+function layer2(fms){
+  const H=fms[0].length, W=fms[0][0].length;
+  const out=Array.from({length:H},()=>new Array(W).fill(0));
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    let s=0;
+    for(const fm of fms) s += fm[y][x];
+    out[y][x] = Math.min(1, s/3);
+  }
+  // simple 2x2 pooling
+  const H2=Math.floor(H/2), W2=Math.floor(W/2);
+  const pooled=Array.from({length:H2},()=>new Array(W2).fill(0));
+  for(let y=0;y<H2;y++) for(let x=0;x<W2;x++){
+    pooled[y][x]=Math.max(out[y*2][x*2],out[y*2+1][x*2],out[y*2][x*2+1],out[y*2+1][x*2+1]);
+  }
+  return pooled;
+}
+const FM_LAYER2=layer2([FM_VERT,FM_HORIZ,FM_DIAG]);
+
+/* Normalise helper */
+function maxOf(mat){
+  let m=0;
+  for(const row of mat) for(const v of row) if(v>m) m=v;
+  return m||1;
+}
+const MAX_V=maxOf(FM_VERT), MAX_H=maxOf(FM_HORIZ), MAX_D=maxOf(FM_DIAG), MAX_L2=maxOf(FM_LAYER2);
+
+function setText(){
+  const d=T[lang];
+  $('h1').innerHTML=d.h1[0]+'<span class="g">'+d.h1[1]+'</span>'+(d.h1[2]||'');
+  $('sub').textContent=d.sub;
+  $('goal-t').textContent=d.goalT;
+  $('goal-p').textContent=d.goalP;
+  $('goal-q').textContent=d.goalQ;
+  $('cap-scene').textContent=d.capScene;
+  $('play').textContent=playing?d.play:d.playP;
+  const s=d.steps[step];
+  $('n-step').textContent=d.step+' '+(step+1)+'/'+N;
+  $('n-title').textContent=s.t;
+  $('n-plato').textContent='« '+s.p+' »';
+  $('n-text').textContent=s.x;
+  $('n-math').innerHTML='$$'+s.m+'$$';
+  if(window.MathJax && window.MathJax.typesetPromise){
+    window.MathJax.typesetPromise([$('n-math')]).catch(()=>{});
+  }
+  $('take-t').textContent=d.takeT;
+  $('take-p1').textContent=d.takeP1;
+  $('take-p2').textContent=d.takeP2;
+  $('take-p3').textContent=d.takeP3;
+  $('take-plato').textContent=d.takePlato;
+}
+function buildDots(){
+  const box=$('dots');box.innerHTML='';
+  for(let i=0;i<N;i++){const b=document.createElement('button');
+    b.className='dot'+(i===step?' on':i<step?' done':'');
+    b.onclick=()=>{step=i;stepStart=performance.now();refresh();};box.appendChild(b);}
+}
+function refresh(){setText();buildDots();}
+
+function setLang(l){lang=l;document.documentElement.lang=l;
+  $('lang-el').classList.toggle('on',l==='el');$('lang-en').classList.toggle('on',l==='en');refresh();}
+$('lang-el').onclick=()=>setLang('el');$('lang-en').onclick=()=>setLang('en');
+
+$('play').onclick=()=>{playing=!playing;if(playing)stepStart=performance.now();setText();};
+$('next').onclick=()=>{if(step<N-1){step++;stepStart=performance.now();refresh();}};
+$('prev').onclick=()=>{if(step>0){step--;stepStart=performance.now();refresh();}};
+$('restart').onclick=()=>{step=0;stepStart=performance.now();playing=true;refresh();};
+
+function fit(cv){const dpr=Math.min(2,window.devicePixelRatio||1);const r=cv.getBoundingClientRect();
+  const w=Math.max(1,Math.round(r.width)),h=Math.max(1,Math.round(r.height));
+  if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr;}
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w,h};}
+
+const sceneCv=$('scene');
+
+/* === Drawing helpers === */
+
+function drawMatrix(ctx, mat, ox, oy, cellSize, color, maxVal, label){
+  const H=mat.length, W=mat[0].length;
+  const mx=maxVal||1;
+  // background
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.fillRect(ox-1,oy-1,W*cellSize+2,H*cellSize+2);
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const v=mat[y][x]/mx;
+      if(v>0.02){
+        ctx.fillStyle='rgba('+color+','+Math.min(1,v)+')';
+        ctx.fillRect(ox+x*cellSize, oy+y*cellSize, cellSize+0.5, cellSize+0.5);
+      }
+    }
+  }
+  // border
+  ctx.strokeStyle='rgba(170,183,214,0.5)';
+  ctx.lineWidth=1;
+  ctx.strokeRect(ox,oy,W*cellSize,H*cellSize);
+  // label underneath
+  if(label){
+    ctx.fillStyle='rgba(170,183,214,0.9)';
+    ctx.font=Math.max(10,cellSize*5)+'px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(label, ox+W*cellSize/2, oy+H*cellSize+6);
+  }
+}
+
+function drawDigitPixels(ctx, ox, oy, cellSize, showGrid){
+  const H=28, W=28;
+  // background
+  ctx.fillStyle='rgba(5,5,10,0.9)';
+  ctx.fillRect(ox-1,oy-1,W*cellSize+2,H*cellSize+2);
+  // grid
+  if(showGrid){
+    ctx.strokeStyle='rgba(80,100,140,0.14)';
+    ctx.lineWidth=0.5;
+    for(let i=0;i<=W;i++){
+      ctx.beginPath();ctx.moveTo(ox+i*cellSize,oy);ctx.lineTo(ox+i*cellSize,oy+H*cellSize);ctx.stroke();
+    }
+    for(let i=0;i<=H;i++){
+      ctx.beginPath();ctx.moveTo(ox,oy+i*cellSize);ctx.lineTo(ox+W*cellSize,oy+i*cellSize);ctx.stroke();
+    }
+  }
+  // pixels
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const v=DIGIT_7[y][x];
+      if(v>0.02){
+        ctx.fillStyle='rgba(0,212,255,'+v+')';
+        ctx.fillRect(ox+x*cellSize, oy+y*cellSize, cellSize+0.5, cellSize+0.5);
+      }
+    }
+  }
+  // border
+  ctx.strokeStyle='rgba(170,183,214,0.6)';
+  ctx.lineWidth=1.5;
+  ctx.strokeRect(ox,oy,W*cellSize,H*cellSize);
+}
+
+/* === Phase 1: pixels only === */
+function drawPixels(ctx, w, h){
+  const cellSize=Math.min(w*0.55,h*0.75)/28;
+  const totalW=cellSize*28;
+  const ox=(w-totalW)/2;
+  const oy=(h-totalW)/2-10;
+  drawDigitPixels(ctx, ox, oy, cellSize, true);
+  // label
+  ctx.fillStyle='rgba(170,183,214,0.9)';
+  ctx.font=Math.max(11,w/68)+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText(lang==='en'?'Input: 28 × 28 pixels (784 numbers)':'Είσοδος: 28 × 28 pixels (784 αριθμοί)', w/2, oy+totalW+16);
+  // some sample pixel values
+  ctx.fillStyle='rgba(170,183,214,0.5)';
+  ctx.font=Math.max(9,w/82)+'px IBM Plex Mono,monospace';
+  ctx.fillText(lang==='en'?'each cell = brightness, 0 (black) to 1 (white)':'κάθε κελί = φωτεινότητα, 0 (μαύρο) έως 1 (λευκό)', w/2, oy+totalW+36);
+}
+
+/* === Phase 2: 3 kernels sweep producing 3 feature maps in parallel === */
+function drawConvolve(ctx, w, h){
+  const elapsed=performance.now()-stepStart;
+  const progress=Math.min(1, elapsed/CONVOLVE_MS);
+  const H=26, W=26;
+  const totalCells=H*W;
+  const cellsDone=Math.min(totalCells, Math.floor(progress*totalCells));
+  const sweepX=Math.min(W-1, cellsDone%W);
+  const sweepY=Math.min(H-1, Math.floor(cellsDone/W));
+  const stillSweeping=progress<1;
+  const fs=Math.min(10, w/80);
+
+  // ---- Left: input digit, shared by all 3 kernels ----
+  const inSize=Math.min(w*0.28, h*0.60);
+  const inCS=inSize/28;
+  const inX=w*0.03;
+  const inY=(h-inSize)/2;
+  drawDigitPixels(ctx, inX, inY, inCS, false);
+  if(stillSweeping){
+    ctx.strokeStyle='rgba(255,255,255,1)';
+    ctx.lineWidth=2;
+    ctx.strokeRect(inX+sweepX*inCS, inY+sweepY*inCS, inCS*3, inCS*3);
+    ctx.fillStyle='rgba(255,255,255,0.18)';
+    ctx.fillRect(inX+sweepX*inCS, inY+sweepY*inCS, inCS*3, inCS*3);
+  }
+  ctx.fillStyle='rgba(0,212,255,0.9)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'input (28×28)':'είσοδος (28×28)', inX+inSize/2, inY-6);
+
+  // ---- Right side: 3 identical rows, each [LABEL | KERNEL | ARROW | FEATURE MAP] ----
+  const kernels=[
+    {K:K_VERT,  color:'245,158,11', label:lang==='en'?'vertical':'κάθετες',    fm:FM_VERT,  max:MAX_V},
+    {K:K_HORIZ, color:'16,185,129', label:lang==='en'?'horizontal':'οριζόντιες', fm:FM_HORIZ, max:MAX_H},
+    {K:K_DIAG,  color:'220,38,38',  label:lang==='en'?'diagonal':'διαγώνιες',  fm:FM_DIAG,  max:MAX_D}
+  ];
+
+  // Right-side area
+  const rightX=inX+inSize+Math.max(20, w*0.03);
+  const rightW=w-rightX-10;
+  const topMargin=h*0.10;
+  const bottomMargin=h*0.06;
+  const availH=h-topMargin-bottomMargin;
+  const rowH=availH/3;
+
+  // Fixed widths per column
+  const labelW=Math.max(72, rightW*0.16);
+  const arrowW=Math.max(22, rightW*0.05);
+  const gapLK=10;
+  const gapKA=8;
+  const gapAF=8;
+
+  // Compute sizes
+  const maxFmByH=rowH*0.78;
+  const fixedKBlock=Math.min(42, rowH*0.42);
+  const kCell=fixedKBlock/3;
+  const kBlockW=kCell*3;
+  const remainingForFm=rightW-labelW-gapLK-kBlockW-gapKA-arrowW-gapAF;
+  const fmSize=Math.max(40, Math.min(maxFmByH, remainingForFm));
+  const rowContentW=labelW+gapLK+kBlockW+gapKA+arrowW+gapAF+fmSize;
+  const rowStartX=rightX+(rightW-rowContentW)/2;
+
+  for(let r=0;r<3;r++){
+    const rowY=topMargin+r*rowH;
+    const rowCenterY=rowY+rowH/2;
+    const km=kernels[r];
+
+    // 1. LABEL (right-aligned at end of label area, vertically centered)
+    ctx.fillStyle='rgba('+km.color+',1)';
+    ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.fillText(km.label, rowStartX+labelW, rowCenterY);
+
+    // 2. KERNEL (centered vertically in row)
+    const kX2=rowStartX+labelW+gapLK;
+    const kY=rowCenterY-kBlockW/2;
+    for(let y=0;y<3;y++) for(let x=0;x<3;x++){
+      ctx.fillStyle='rgba('+km.color+',0.15)';
+      ctx.fillRect(kX2+x*kCell, kY+y*kCell, kCell, kCell);
+      ctx.strokeStyle='rgba('+km.color+',0.8)';
+      ctx.lineWidth=1;
+      ctx.strokeRect(kX2+x*kCell, kY+y*kCell, kCell, kCell);
+      ctx.fillStyle='rgba(255,255,255,0.95)';
+      ctx.font='600 '+Math.min(10, kCell*0.55)+'px IBM Plex Mono,monospace';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(km.K[y][x]>=0?' '+km.K[y][x]:km.K[y][x], kX2+x*kCell+kCell/2, kY+y*kCell+kCell/2);
+    }
+
+    // 3. ARROW
+    const arrX1=kX2+kBlockW+gapKA;
+    const arrX2=arrX1+arrowW;
+    ctx.strokeStyle='rgba('+km.color+',0.5)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(arrX1, rowCenterY);ctx.lineTo(arrX2-6, rowCenterY);ctx.stroke();
+    ctx.fillStyle='rgba('+km.color+',0.55)';
+    ctx.beginPath();ctx.moveTo(arrX2-2, rowCenterY);ctx.lineTo(arrX2-8, rowCenterY-4);ctx.lineTo(arrX2-8, rowCenterY+4);ctx.closePath();ctx.fill();
+
+    // 4. FEATURE MAP (centered vertically in row)
+    const fmX=arrX2+gapAF;
+    const fmY=rowCenterY-fmSize/2;
+    const fmCS=fmSize/26;
+    ctx.fillStyle='rgba(5,5,10,0.9)';
+    ctx.fillRect(fmX-1, fmY-1, fmSize+2, fmSize+2);
+    for(let y=0;y<H;y++){
+      let brk=false;
+      for(let x=0;x<W;x++){
+        const idx=y*W+x;
+        if(idx>=cellsDone && stillSweeping){brk=true;break;}
+        const v=km.fm[y][x]/km.max;
+        if(v>0.02){
+          ctx.fillStyle='rgba('+km.color+','+Math.min(1,v)+')';
+          ctx.fillRect(fmX+x*fmCS, fmY+y*fmCS, fmCS+0.5, fmCS+0.5);
+        }
+      }
+      if(brk) break;
+    }
+    ctx.strokeStyle='rgba(170,183,214,0.5)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(fmX, fmY, fmSize, fmSize);
+    if(stillSweeping){
+      ctx.strokeStyle='rgba('+km.color+',1)';
+      ctx.lineWidth=1.3;
+      ctx.strokeRect(fmX+sweepX*fmCS, fmY+sweepY*fmCS, fmCS, fmCS);
+    }
+  }
+
+  // Column titles ABOVE top row
+  const kColCenter=rowStartX+labelW+gapLK+kBlockW/2;
+  const fmColCenter=rowStartX+labelW+gapLK+kBlockW+gapKA+arrowW+gapAF+fmSize/2;
+  ctx.fillStyle='rgba(170,183,214,0.85)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'kernel 3×3':'kernel 3×3', kColCenter, topMargin-6);
+  ctx.fillText(lang==='en'?'feature maps (26×26)':'feature maps (26×26)', fmColCenter, topMargin-6);
+}
+
+/* === Phase 3: three edge feature maps side by side === */
+function drawEdges(ctx, w, h){
+  const fs=Math.min(12, w/70);
+  const mapSize=Math.min(w*0.25, h*0.60);
+  const cellSize=mapSize/26;
+  const gap=w*0.025;
+  const totalW=3*mapSize+2*gap;
+  const startX=(w-totalW)/2;
+  const fmy=h*0.14;
+  // Three feature maps with labels
+  const maps=[
+    {fm:FM_VERT,  max:MAX_V, color:'245,158,11', label:lang==='en'?'vertical edges':'κάθετες ακμές'},
+    {fm:FM_HORIZ, max:MAX_H, color:'16,185,129', label:lang==='en'?'horizontal edges':'οριζόντιες ακμές'},
+    {fm:FM_DIAG,  max:MAX_D, color:'220,38,38',  label:lang==='en'?'diagonal edges':'διαγώνιες ακμές'}
+  ];
+  for(let i=0;i<3;i++){
+    const ox=startX+i*(mapSize+gap);
+    // Title above
+    ctx.fillStyle='rgba('+maps[i].color+',1)';
+    ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    ctx.fillText(maps[i].label, ox+mapSize/2, fmy-8);
+    // Feature map
+    drawMatrix(ctx, maps[i].fm, ox, fmy, cellSize, maps[i].color, maps[i].max, null);
+  }
+  // Caption at bottom
+  ctx.fillStyle='rgba(170,183,214,0.9)';
+  ctx.font=fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText(lang==='en'?'Each filter lights up its own kind of edge on the "7"':'Κάθε φίλτρο φωτίζει το δικό του είδος ακμής στο «7»', w/2, fmy+mapSize+20);
+}
+
+/* === Phase 4: layer 2 shapes === */
+function drawShapes(ctx, w, h){
+  const fs=Math.min(11, w/75);
+  const topTitleY=h*0.08;
+  const bodyTop=h*0.18;
+  const bodyBot=h*0.78;
+  const bodyH=bodyBot-bodyTop;
+  // Three columns: Layer 1 outputs | Layer 2 | Hidden features
+  // Layout
+  const col1X=w*0.04, col1W=w*0.22;
+  const col2X=w*0.40, col2W=w*0.24;
+  const col3X=w*0.78, col3W=w*0.18;
+
+  // Column 1 title
+  ctx.fillStyle='rgba(170,183,214,0.9)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'Layer 1 (edges)':'Layer 1 (ακμές)', col1X+col1W/2, topTitleY+fs);
+
+  // Three small edge maps stacked
+  const smH=(bodyH-16)/3;
+  const smSize=Math.min(col1W*0.9, smH);
+  const smCS=smSize/26;
+  const colors=['245,158,11','16,185,129','220,38,38'];
+  const maps=[FM_VERT,FM_HORIZ,FM_DIAG];
+  const maxes=[MAX_V,MAX_H,MAX_D];
+  for(let i=0;i<3;i++){
+    const smY=bodyTop+i*(smH+4);
+    const smX=col1X+(col1W-smSize)/2;
+    drawMatrix(ctx, maps[i], smX, smY+(smH-smSize)/2, smCS, colors[i], maxes[i], null);
+  }
+
+  // Arrow 1 → middle
+  const arr1X1=col1X+col1W+6;
+  const arr1X2=col2X-6;
+  const midY=(bodyTop+bodyBot)/2;
+  ctx.strokeStyle='rgba(170,183,214,0.55)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(arr1X1,midY);ctx.lineTo(arr1X2,midY);ctx.stroke();
+  ctx.fillStyle='rgba(170,183,214,0.55)';
+  ctx.beginPath();ctx.moveTo(arr1X2,midY);ctx.lineTo(arr1X2-8,midY-4);ctx.lineTo(arr1X2-8,midY+4);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(170,183,214,0.85)';
+  ctx.font=fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText(lang==='en'?'combine':'συνδυασμός', (arr1X1+arr1X2)/2, midY-6);
+
+  // Column 2 title + layer 2 map
+  ctx.fillStyle='rgba(124,58,247,1)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'Layer 2 (shapes)':'Layer 2 (σχήματα)', col2X+col2W/2, topTitleY+fs);
+  const l2Size=Math.min(col2W*0.95, bodyH*0.85);
+  const l2CS=l2Size/FM_LAYER2.length;
+  const l2x=col2X+(col2W-l2Size)/2;
+  const l2y=bodyTop+(bodyH-l2Size)/2;
+  drawMatrix(ctx, FM_LAYER2, l2x, l2y, l2CS, '124,58,247', MAX_L2, null);
+
+  // Arrow 2 → hidden
+  const arr2X1=col2X+col2W+6;
+  const arr2X2=col3X-6;
+  ctx.strokeStyle='rgba(170,183,214,0.55)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(arr2X1,midY);ctx.lineTo(arr2X2,midY);ctx.stroke();
+  ctx.fillStyle='rgba(170,183,214,0.55)';
+  ctx.beginPath();ctx.moveTo(arr2X2,midY);ctx.lineTo(arr2X2-8,midY-4);ctx.lineTo(arr2X2-8,midY+4);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(170,183,214,0.85)';
+  ctx.font=fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText('flatten', (arr2X1+arr2X2)/2, midY-6);
+
+  // Column 3 title + hidden features
+  ctx.fillStyle='rgba(170,183,214,0.9)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'hidden':'κρυφά', col3X+col3W/2, topTitleY+fs);
+  const barCount=12;
+  const barH=bodyH/barCount;
+  const barMax=col3W*0.9;
+  for(let i=0;i<barCount;i++){
+    const seedV=((i*7919+13)%97)/97*0.6+0.3;
+    const barW=barMax*seedV;
+    const bx=col3X+(col3W-barMax)/2;
+    const by=bodyTop+i*barH+1;
+    ctx.fillStyle='rgba(124,58,247,0.7)';
+    ctx.fillRect(bx, by, barW, barH-2);
+    ctx.strokeStyle='rgba(124,58,247,0.25)';
+    ctx.lineWidth=0.5;
+    ctx.strokeRect(bx, by, barMax, barH-2);
+  }
+}
+
+/* === Phase 5: 10 output neurons, "7" wins === */
+function drawIdea(ctx, w, h){
+  const fs=Math.min(11, w/75);
+  const bodyTop=h*0.14, bodyBot=h*0.86;
+  const bodyH=bodyBot-bodyTop;
+
+  // Three columns: input | hidden | output
+  const col1X=w*0.04, col1W=w*0.18;
+  const col2X=w*0.28, col2W=w*0.14;
+  const col3X=w*0.48, col3W=w*0.48;
+
+  // Input
+  const inputSize=Math.min(col1W*0.95, bodyH*0.6);
+  const inputCS=inputSize/28;
+  const iox=col1X+(col1W-inputSize)/2, ioy=bodyTop+(bodyH-inputSize)/2;
+  drawDigitPixels(ctx, iox, ioy, inputCS, false);
+  ctx.fillStyle='rgba(0,212,255,0.9)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'input':'είσοδος', col1X+col1W/2, ioy-6);
+
+  // Hidden features bars
+  ctx.fillStyle='rgba(124,58,247,0.95)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'hidden':'κρυφά', col2X+col2W/2, bodyTop+fs);
+  const hy=bodyTop+fs*2;
+  const hh=bodyH-fs*2;
+  const barCount=10;
+  const barH=hh/barCount;
+  const barMax=col2W*0.9;
+  for(let i=0;i<barCount;i++){
+    const seedV=((i*7919+13)%97)/97*0.6+0.3;
+    const barW=barMax*seedV;
+    const bx=col2X+(col2W-barMax)/2;
+    const by=hy+i*barH+1;
+    ctx.fillStyle='rgba(124,58,247,0.7)';
+    ctx.fillRect(bx, by, barW, barH-2);
+    ctx.strokeStyle='rgba(124,58,247,0.25)';
+    ctx.lineWidth=0.5;
+    ctx.strokeRect(bx, by, barMax, barH-2);
+  }
+
+  // Output probabilities for 10 digits — "7" dominates
+  const probs=[0.01,0.02,0.01,0.02,0.01,0.01,0.03,0.86,0.02,0.01];
+  ctx.fillStyle='rgba(16,185,129,0.95)';
+  ctx.font='600 '+fs+'px IBM Plex Mono,monospace';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'Output: P(digit)':'Έξοδος: P(ψηφίο)', col3X, bodyTop+fs);
+  const py=bodyTop+fs*2;
+  const ph=bodyH-fs*2;
+  const rowH=ph/10;
+  for(let d=0;d<10;d++){
+    const y=py+d*rowH;
+    const p=probs[d];
+    const isWin=(d===7);
+    // digit label
+    ctx.fillStyle=isWin?'rgba(16,185,129,1)':'rgba(170,183,214,0.75)';
+    ctx.font=(isWin?'700 ':'')+fs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText(d, col3X, y+rowH/2);
+    // bar
+    const barOffset=18;
+    const bMax=col3W-barOffset-40;
+    const bW=bMax*p;
+    ctx.fillStyle=isWin?'rgba(16,185,129,0.9)':'rgba(170,183,214,0.3)';
+    ctx.fillRect(col3X+barOffset, y+rowH*0.22, bW, rowH*0.56);
+    ctx.strokeStyle=isWin?'rgba(16,185,129,0.7)':'rgba(170,183,214,0.2)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(col3X+barOffset, y+rowH*0.22, bMax, rowH*0.56);
+    // percentage
+    ctx.fillStyle=isWin?'rgba(255,255,255,1)':'rgba(170,183,214,0.7)';
+    ctx.font=fs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.fillText((p*100).toFixed(0)+'%', col3X+col3W-4, y+rowH/2);
+  }
+
+  // Arrows between stages
+  ctx.strokeStyle='rgba(170,183,214,0.4)';
+  ctx.lineWidth=1;
+  const midY=(bodyTop+bodyBot)/2;
+  ctx.beginPath();ctx.moveTo(col1X+col1W+4, midY);ctx.lineTo(col2X-4, midY);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(col2X+col2W+4, midY);ctx.lineTo(col3X-4, midY);ctx.stroke();
+}
+
+/* === Phase 6: three principles with CLEAR zones === */
+function drawPrinciples(ctx, w, h){
+  const items=[
+    {t:lang==='en'?'Local connectivity':'Local connectivity',
+     d:lang==='en'?'neuron sees only\na 3×3 patch':'ο νευρώνας βλέπει\nμόνο μία 3×3 περιοχή',
+     color:'0,212,255', drawFn:drawPrincipleLocal},
+    {t:lang==='en'?'Parameter sharing':'Parameter sharing',
+     d:lang==='en'?'same filter\nused everywhere':'ίδιο φίλτρο\nπαντού στην εικόνα',
+     color:'245,158,11', drawFn:drawPrincipleShared},
+    {t:lang==='en'?'Hierarchical features':'Hierarchical features',
+     d:lang==='en'?'simple → complex\nlayer by layer':'απλό → σύνθετο\nlayer προς layer',
+     color:'220,38,38', drawFn:drawPrincipleHierarchy}
+  ];
+  const n=items.length;
+  const padL=w*0.025, padR=w*0.025, gap=w*0.02;
+  const colW=(w-padL-padR-gap*(n-1))/n;
+  const topY=h*0.03;
+  const boxH=h*0.94;
+  // Zones (same for every column)
+  const titleH=28;
+  const descH=46;
+  const innerPad=10;
+  const titleY=topY+innerPad;              // title baseline area
+  const visY=topY+titleH+innerPad;         // visualisation start
+  const visH=boxH-titleH-descH-innerPad*2; // visualisation height
+  const descY=topY+boxH-descH+4;           // description start
+
+  for(let i=0;i<n;i++){
+    const it=items[i];
+    const cx=padL+i*(colW+gap);
+    // Box background
+    ctx.fillStyle='rgba('+it.color+',0.05)';
+    ctx.fillRect(cx,topY,colW,boxH);
+    ctx.strokeStyle='rgba('+it.color+',0.5)';
+    ctx.lineWidth=1.2;
+    ctx.strokeRect(cx,topY,colW,boxH);
+
+    // Title zone
+    const titleFs=Math.min(13, colW/13);
+    ctx.fillStyle='rgba('+it.color+',1)';
+    ctx.font='700 '+titleFs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(it.t, cx+colW/2, titleY);
+
+    // Separator under title
+    ctx.strokeStyle='rgba('+it.color+',0.25)';
+    ctx.lineWidth=0.5;
+    ctx.beginPath();
+    ctx.moveTo(cx+colW*0.15, topY+titleH+4);
+    ctx.lineTo(cx+colW*0.85, topY+titleH+4);
+    ctx.stroke();
+
+    // Visualization zone (centered inside)
+    it.drawFn(ctx, cx+colW*0.05, visY, colW*0.90, visH, it.color);
+
+    // Separator above description
+    ctx.strokeStyle='rgba('+it.color+',0.25)';
+    ctx.lineWidth=0.5;
+    ctx.beginPath();
+    ctx.moveTo(cx+colW*0.15, descY-6);
+    ctx.lineTo(cx+colW*0.85, descY-6);
+    ctx.stroke();
+
+    // Description zone
+    const descFs=Math.min(11, colW/17);
+    ctx.fillStyle='rgba(200,210,235,0.9)';
+    ctx.font=descFs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    const lines=it.d.split('\n');
+    const lineH=descFs+5;
+    for(let k=0;k<lines.length;k++){
+      ctx.fillText(lines[k], cx+colW/2, descY+k*lineH);
+    }
+  }
+}
+
+function drawPrincipleLocal(ctx, x, y, w, h, color){
+  // Centered digit with one 3x3 patch highlighted
+  const digSize=Math.min(w*0.90, h*0.90);
+  const cs=digSize/28;
+  const dox=x+(w-digSize)/2;
+  const doy=y+(h-digSize)/2;
+  drawDigitPixels(ctx, dox, doy, cs, false);
+  // Highlight 3x3 at digit center
+  const px=13, py=13;
+  ctx.strokeStyle='rgba('+color+',1)';
+  ctx.lineWidth=2.5;
+  ctx.strokeRect(dox+px*cs, doy+py*cs, cs*3, cs*3);
+  ctx.fillStyle='rgba('+color+',0.35)';
+  ctx.fillRect(dox+px*cs, doy+py*cs, cs*3, cs*3);
+}
+
+function drawPrincipleShared(ctx, x, y, w, h, color){
+  // Centered digit with same kernel K at 3 different positions
+  const digSize=Math.min(w*0.90, h*0.90);
+  const cs=digSize/28;
+  const dox=x+(w-digSize)/2;
+  const doy=y+(h-digSize)/2;
+  drawDigitPixels(ctx, dox, doy, cs, false);
+  // Three identical kernel positions spread across the digit
+  const positions=[[3,6],[18,10],[8,20]];
+  for(const [px,py] of positions){
+    ctx.strokeStyle='rgba('+color+',1)';
+    ctx.lineWidth=2;
+    ctx.strokeRect(dox+px*cs, doy+py*cs, cs*3, cs*3);
+    ctx.fillStyle='rgba('+color+',0.30)';
+    ctx.fillRect(dox+px*cs, doy+py*cs, cs*3, cs*3);
+  }
+}
+
+function drawPrincipleHierarchy(ctx, x, y, w, h, color){
+  // Three digits shrinking: fully centered horizontally and vertically
+  const stages=3;
+  const sources=[DIGIT_7, FM_LAYER2, FM_LAYER2];
+  const maxes=[1, MAX_L2, MAX_L2];
+  const colors=['0,212,255', '124,58,247', color];
+  const sizeFactors=[0.90, 0.60, 0.35];
+  const fs=Math.min(10, w/28);
+  const labelGap=fs+6;
+  // compute each size based on available h minus label
+  const availH=h-labelGap-2;
+  const unitSize=Math.min(w*0.26, availH);
+  const sizes=sizeFactors.map(f=>unitSize*f);
+  const arrowGap=Math.min(10, w*0.02);
+  const totalW=sizes.reduce((a,b)=>a+b,0) + (stages-1)*arrowGap;
+  // horizontal centering
+  let curX=x+(w-totalW)/2;
+  const cy=y+availH/2;
+  for(let i=0;i<stages;i++){
+    const size=sizes[i];
+    const mat=sources[i];
+    const cs=size/mat.length;
+    const ox=curX;
+    const oy=cy-size/2;
+    if(i===0){
+      drawDigitPixels(ctx, ox, oy, cs, false);
+    } else {
+      drawMatrix(ctx, mat, ox, oy, cs, colors[i], maxes[i], null);
+    }
+    // Label below each digit
+    ctx.fillStyle='rgba(170,183,214,0.85)';
+    ctx.font=fs+'px IBM Plex Mono,monospace';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText('L'+(i+1), ox+size/2, oy+size+4);
+    // Arrow to next
+    if(i<stages-1){
+      const ax=ox+size+2;
+      const bx=curX+size+arrowGap-2;
+      ctx.strokeStyle='rgba(170,183,214,0.5)';
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(ax,cy);ctx.lineTo(bx,cy);ctx.stroke();
+      ctx.fillStyle='rgba(170,183,214,0.5)';
+      ctx.beginPath();ctx.moveTo(bx,cy);ctx.lineTo(bx-5,cy-3);ctx.lineTo(bx-5,cy+3);ctx.closePath();ctx.fill();
+    }
+    curX+=size+arrowGap;
+  }
+}
+
+/* === Phase 7: digit tester === */
+function drawReturn(ctx, w, h){
+  // Left: 280x280 canvas with hand-drawn "7"
+  const sz=Math.min(w*0.35,h*0.75);
+  const lx=w*0.08, ly=(h-sz)/2;
+  ctx.fillStyle='#000';
+  ctx.fillRect(lx,ly,sz,sz);
+  ctx.strokeStyle='rgba(170,183,214,0.6)';
+  ctx.lineWidth=1.5;
+  ctx.strokeRect(lx,ly,sz,sz);
+  // Draw a "7" that looks hand-drawn (thicker, slightly shaky)
+  const scale=sz/28;
+  ctx.fillStyle='rgba(255,255,255,0.95)';
+  for(let yy=0;yy<28;yy++){
+    for(let xx=0;xx<28;xx++){
+      if(DIGIT_7[yy][xx]>0.4){
+        ctx.fillRect(lx+xx*scale,ly+yy*scale,scale*1.4,scale*1.4);
+      }
+    }
+  }
+  ctx.fillStyle='rgba(170,183,214,0.85)';
+  ctx.font=Math.max(10,w/72)+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText(lang==='en'?'your drawing (280×280)':'η ζωγραφιά σου (280×280)', lx+sz/2, ly+sz+8);
+
+  // Arrow
+  const ax1=lx+sz+16, ax2=w*0.55;
+  ctx.strokeStyle='rgba(0,212,255,0.7)';
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(ax1,h/2);ctx.lineTo(ax2,h/2);ctx.stroke();
+  ctx.fillStyle='rgba(0,212,255,0.7)';
+  ctx.beginPath();
+  ctx.moveTo(ax2,h/2);
+  ctx.lineTo(ax2-10,h/2-6);
+  ctx.lineTo(ax2-10,h/2+6);
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(0,212,255,0.95)';
+  ctx.font=Math.max(11,w/66)+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText('CNN',(ax1+ax2)/2,h/2-8);
+  ctx.fillStyle='rgba(170,183,214,0.6)';
+  ctx.font=Math.max(9,w/82)+'px IBM Plex Mono,monospace';
+  ctx.textBaseline='top';
+  ctx.fillText(lang==='en'?'(trained on MNIST)':'(εκπαιδευμένο σε MNIST)',(ax1+ax2)/2,h/2+8);
+
+  // Prediction box
+  const rx=ax2+16, ry=h*0.15, rw=w*0.32, rh=h*0.70;
+  ctx.fillStyle='rgba(16,185,129,0.08)';
+  ctx.fillRect(rx,ry,rw,rh);
+  ctx.strokeStyle='rgba(16,185,129,0.6)';
+  ctx.lineWidth=1.5;
+  ctx.strokeRect(rx,ry,rw,rh);
+  ctx.fillStyle='rgba(16,185,129,1)';
+  ctx.font='700 '+Math.max(11,w/60)+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(lang==='en'?'Prediction':'Πρόβλεψη',rx+rw/2,ry+22);
+  ctx.fillStyle='rgba(16,185,129,1)';
+  ctx.font='700 '+Math.max(36,w/10)+'px IBM Plex Mono,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('7',rx+rw/2,ry+rh*0.40);
+  // Top-3 bars
+  const bars=[{d:7,p:0.94},{d:1,p:0.03},{d:2,p:0.02}];
+  const by=ry+rh*0.63;
+  const bh=20, bg=6;
+  for(let i=0;i<bars.length;i++){
+    const yy=by+i*(bh+bg);
+    ctx.fillStyle='rgba(200,210,235,0.85)';
+    ctx.font=Math.max(9,w/80)+'px IBM Plex Mono,monospace';
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText(bars[i].d+':',rx+10,yy+bh/2);
+    const barMax=rw-70;
+    const barW=barMax*bars[i].p;
+    ctx.fillStyle='rgba(16,185,129,'+(0.4+bars[i].p*0.5)+')';
+    ctx.fillRect(rx+26,yy,barW,bh);
+    ctx.strokeStyle='rgba(16,185,129,0.3)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(rx+26,yy,barMax,bh);
+    ctx.fillStyle='rgba(255,255,255,0.95)';
+    ctx.textAlign='right';
+    ctx.fillText((bars[i].p*100).toFixed(1)+'%',rx+rw-10,yy+bh/2);
+  }
+}
+
+function drawScene(){
+  const {ctx,w,h}=fit(sceneCv);ctx.clearRect(0,0,w,h);
+  const s=S[step];
+  if(s.phase==='pixels') drawPixels(ctx,w,h);
+  else if(s.phase==='convolve') drawConvolve(ctx,w,h);
+  else if(s.phase==='edges') drawEdges(ctx,w,h);
+  else if(s.phase==='shapes') drawShapes(ctx,w,h);
+  else if(s.phase==='idea') drawIdea(ctx,w,h);
+  else if(s.phase==='principles') drawPrinciples(ctx,w,h);
+  else if(s.phase==='return') drawReturn(ctx,w,h);
+}
+
+function loop(){
+  drawScene();
+  if(playing && (performance.now()-stepStart)>STEP_MS){
+    if(step<N-1){step++;stepStart=performance.now();refresh();}
+    else{playing=false;setText();}
+  }
+  requestAnimationFrame(loop);
+}
+let rz;
+window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{drawScene();},120);});
+
+stepStart=performance.now();
+setLang('el');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
